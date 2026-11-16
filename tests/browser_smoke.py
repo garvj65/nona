@@ -168,6 +168,7 @@ def main():
             phone.locator('#look-settings').wait_for(state='visible')
             phone.wait_for_timeout(100)
             assert phone.evaluate('document.documentElement.scrollWidth<=innerWidth')
+            phone.screenshot(path=str(artifacts/'mobile-controls-landscape-layout.png'),full_page=True)
             release = phone.locator('#release').bounding_box()
             assert release['y'] + release['height'] <= 393, release
             app.state.room.engine.arm()

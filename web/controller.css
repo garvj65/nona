@@ -33,8 +33,8 @@
   .mobile-look .look-settings button{padding:4px 7px;font-size:9px}
   .mobile-look .look-settings label{font-size:9px}
   .mobile-look .look-settings #gyro-status{font-size:9px;text-align:center;line-height:12px}
-  .mobile-look .stick{height:145px}
-  .mobile-look .dualstick-controls{min-height:166px;gap:18px}
+  .mobile-look .stick{height:130px}
+  .mobile-look .dualstick-controls{min-height:150px;gap:18px}
   .mobile-look .stick-group .tiny{font-size:8px}
   .mobile-look .compact-face{grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px)}
   .mobile-look .utility{margin:2px 0 6px}

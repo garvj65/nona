@@ -41,15 +41,15 @@ def main():
             android = browser.new_context(**p.devices['Pixel 7'])
             phone = android.new_page(); phone.on('pageerror', lambda error: errors.append(str(error)))
             phone.goto(origin + '/controller#' + app.state.room.token, wait_until='networkidle')
-            phone.wait_for_function("document.getElementById('status').textContent==='Connected'")
+            phone.wait_for_function("() => document.getElementById('status').textContent==='Connected'")
             phone.locator('#controller-profile').select_option('racing_arrows')
             phone.locator('#racing-controls').wait_for(state='visible')
-            dashboard.wait_for_function("document.getElementById('profile').value==='racing_arrows'")
+            dashboard.wait_for_function("() => document.getElementById('profile').value==='racing_arrows'")
             assert phone.evaluate('document.documentElement.scrollWidth<=innerWidth')
             phone.screenshot(path=str(artifacts / 'controller-portrait.png'), full_page=True)
             # A real touch-down and touch-up must not be lost between animation frames.
             phone.locator('[data-button=start]').tap()
-            game.wait_for_function('race.running && !race.paused')
+            game.wait_for_function('() => race.running && !race.paused')
             cdp = android.new_cdp_session(phone)
 
             def point(selector, ident, offset=0):
@@ -59,13 +59,13 @@ def main():
 
             points = [point('#wheel', 1, 35), point('#racing-controls [data-button=a]', 2)]
             cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': points})
-            game.wait_for_function("remote.has('a') && remoteSteering > 0.2")
+            game.wait_for_function("() => remote.has('a') && remoteSteering > 0.2")
             phone.wait_for_timeout(300)
-            assert game.evaluate('race.speed > 20 && race.x > 600 && race.heading > 0')
+            assert game.evaluate('() => race.speed > 20 && race.x > 600 && race.heading > 0')
             cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
-            game.wait_for_function('remoteSteering===0 && remote.size===0')
-            phone.locator('[data-button=start]').tap(); game.wait_for_function('race.paused')
-            phone.locator('[data-button=start]').tap(); game.wait_for_function('!race.paused')
+            game.wait_for_function('() => remoteSteering===0 && remote.size===0')
+            phone.locator('[data-button=start]').tap(); game.wait_for_function('() => race.paused')
+            phone.locator('[data-button=start]').tap(); game.wait_for_function('() => !race.paused')
             phone.set_viewport_size({'width': 851, 'height': 393})
             phone.wait_for_timeout(150)
             assert phone.evaluate('document.documentElement.scrollWidth<=innerWidth')
@@ -80,9 +80,9 @@ def main():
                                            and response.request.method == 'POST') as saved:
                 dashboard.locator('#save-mapping').click()
             assert saved.value.status == 200
-            dashboard.wait_for_function("document.querySelector('[data-action=nitro]').value==='ctrl'")
+            dashboard.wait_for_function("() => document.querySelector('[data-action=nitro]').value==='ctrl'")
             assert dashboard.request.get(origin + '/api/session').json()['mapping']['nitro'] == 'ctrl'
-            phone.close(); game.wait_for_function('race.paused && !connected')
+            phone.close(); game.wait_for_function('() => race.paused && !connected')
             assert not errors, errors
             print(json.dumps({'dashboard_and_qr': 'passed', 'profile_sync': 'passed',
                               'android_emulated_multi_touch_racing': 'passed', 'wheel_centring': 'passed',

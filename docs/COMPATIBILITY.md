@@ -5,8 +5,9 @@ NONA supplies inputs. The laptop and game still determine performance and platfo
 | Target | Current integration | Evidence / next check |
 |---|---|---|
 | Original Neon Run | Direct WebSocket state | User reported working Windows + Android gameplay; protocol kept compatible |
-| NONA Sprint | Direct button state plus proportional steering | User reported successful Windows + Android gameplay in 0.2 |
-| Jake Gordon's JavaScript Racer | Racing · Arrows keyboard bridge | User reported successful Windows + Android gameplay in 0.2 |
+| NONA Sprint | Direct button state plus proportional touch/tilt steering | Owner reported physical tilt gameplay works on 2026-11-16 with Windows + Vivo/Chrome; release and screen-lock checks remain open |
+| Jake Gordon's JavaScript Racer | Racing · Arrows keyboard bridge with touch/tilt steering | Owner reported physical tilt gameplay works on 2026-11-16 on the same setup; this is keyboard steering rather than analog gamepad input |
+| Roblox | Keyboard starter and optional Xbox candidate profiles | No physical result yet; follow ROBLOX_TEST.md and record the specific experience |
 | Other keyboard-controlled websites | Racing/Gamepad presets plus editable bindings | Per-game focus, bindings and input acceptance must be checked |
 | Windows-native games accepting keyboard input | Same Windows keyboard bridge | Candidate path, not blanket verified support; some input systems reject injection |
 | Xbox-compatible titles | Optional virtual Xbox output in 0.3 | Implemented with a legacy driver dependency; physical device/game tests required |
@@ -37,4 +38,4 @@ The companion currently injects keys only on Windows. The built-in demos can run
 For each game note: game/version or URL, laptop CPU/GPU/RAM, Windows/browser version, chosen preset and overrides, whether press/hold/release works, whether steering plus gas works, performance settings, and connection/focus behavior. Mark it verified only after playing it. This is the evidence to collect before promising broad support.
 
 
-Owner update: SuperTuxKart and SuperTux do not run on this laptop and are blocked test targets. Use the alternatives in NATIVE_GAMES.md. Motion and Roblox are staged in MOTION_TEST.md and ROBLOX_TEST.md.
+Owner update (2026-11-16): physical tilt works in NONA Sprint and JavaScript Racer. Reported controller RTT is around 10–40 ms; it does not measure the complete motion-to-display delay. The device is a Vivo phone with Chrome; Android 13 is the owner's estimate and the exact model/version are unconfirmed. Release and screen-lock tests were explicitly not checked. See VALIDATION.md for the evidence boundaries and remaining checks. SuperTuxKart and SuperTux do not run on this laptop and are blocked test targets. Use the alternatives in NATIVE_GAMES.md. Motion lifecycle and Roblox checks are described in MOTION_TEST.md and ROBLOX_TEST.md.

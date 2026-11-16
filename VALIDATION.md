@@ -4,7 +4,18 @@ Recorded: 2026-11-16.
 
 ## Device evidence
 
-The owner confirmed NONA Sprint and JavaScript Racer work with Windows + Android. SuperTuxKart and SuperTux do not run on this laptop, so they are blocked targets. Physical tilt, Roblox gameplay, optional Xbox-driver gameplay and the eventual packaged v1 remain separate acceptance gates.
+On 2026-11-16 the owner reported that physical phone tilt works in both NONA Sprint and JavaScript Racer with a Windows laptop and a Vivo phone using Chrome. The owner believes the phone runs Android 13; the exact model, Android version and Chrome version are not yet confirmed.
+
+| Physical check | Owner-reported result |
+|---|---|
+| NONA Sprint tilt gameplay | Works |
+| JavaScript Racer tilt gameplay through the keyboard bridge | Works |
+| Controller RTT | Around 10–40 ms; this is the controller acknowledgement round trip, not measured end-to-end motion-to-display latency |
+| Release / stop and screen lock | Not checked |
+| Wi-Fi interruption, reconnect, rotation and touch fallback | No physical result recorded yet |
+| Roblox and optional Xbox-driver gameplay | Not tested yet |
+
+These are owner-reported physical results, separate from automated tests. They establish working tilt gameplay on this setup, not completion of every motion acceptance check or compatibility with other devices. SuperTuxKart and SuperTux do not run on this laptop and remain blocked targets. Roblox, full lifecycle checks and the eventual packaged v1 remain acceptance gates.
 
 ## Passed locally
 
@@ -19,8 +30,8 @@ The native Xbox tests use mocked backends. The certificate tests create temporar
 
 These are generated sensor events, not readings from real Android hardware. Loopback is a browser secure context; physical phones browsing a laptop LAN IP use the documented trusted HTTPS setup. TLS certificate validation is tested independently over real HTTPS/WSS sockets. See Actions for the actual browser run result; test code alone is not proof of a pass.
 
-## Required physical test now
+## Remaining physical checks
 
-Follow docs/MOTION_TEST.md. Confirm sensor access, stable calibration, correct direction (or Invert), neutral response, a playable lap, touch fallback, rotation, screen lock and disconnect behavior. Record phone/browser and laptop details. Then complete docs/ROBLOX_TEST.md in a real experience.
+Follow docs/MOTION_TEST.md to finish the release, screen-lock, disconnect/reconnect, rotation and touch-fallback checks. Record any remaining details about calibration, steering direction and neutral response, along with the exact phone/browser and laptop specifications. Then complete docs/ROBLOX_TEST.md in a real experience; begin with ordinary movement/jump controls before testing motion in a vehicle.
 
 The user requested refinement, validation, review, security checks and packaging after motion and Roblox succeed. Those gates are captured in docs/V1_PLAN.md. This iteration is not a completed security audit or a v1 APK/Windows bundle. The later phone-as-DualSense PS5 bridge is not implemented here.

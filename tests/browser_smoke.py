@@ -75,15 +75,15 @@ def main():
             game.screenshot(path=str(artifacts / 'race.png'), full_page=True)
             # Saving a custom mapping reaches the server; selecting a preset restores it.
             dashboard.locator('#mapping-editor summary').click()
-            dashboard.locator('[data-action=nitro]').select_option('ctrl')
+            dashboard.locator('#mapping-fields [data-action=nitro]').select_option('ctrl')
             with dashboard.expect_response(lambda response: response.url.endswith('/api/mapping')
                                            and response.request.method == 'POST') as saved:
                 dashboard.locator('#save-mapping').click()
             assert saved.value.status == 200
-            dashboard.wait_for_function("() => document.querySelector('[data-action=nitro]').value==='ctrl'")
+            dashboard.wait_for_function("() => document.querySelector('#mapping-fields [data-action=nitro]').value==='ctrl'")
             assert dashboard.request.get(origin + '/api/session').json()['mapping']['nitro'] == 'ctrl'
             dashboard.locator('summary').filter(has_text='Save, export or import').click()
-            dashboard.locator('#profile-name').fill('My browser racing profile')
+            dashboard.locator('#profile-name').fill('My browser racing profile with custom bindings and tuning for native racing')
             with dashboard.expect_response(lambda response: response.url.endswith('/api/profiles')
                                            and response.request.method == 'POST') as stored:
                 dashboard.locator('#save-profile').click()

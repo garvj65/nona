@@ -1,0 +1,31 @@
+NONA 0.2 — YOUR PHONE, NOW A RACING CONTROLLER
+
+1. Extract the entire download. Close the old PocketPad terminal if it is running.
+2. Install Python 3.10+ if needed: https://www.python.org/downloads/windows/
+   Select Add python.exe to PATH during installation.
+3. Double-click START_WINDOWS.bat. Keep its terminal running.
+4. Put your Android phone and Windows laptop on the same Wi-Fi.
+5. Scan the laptop dashboard QR code and open it in Chrome on Android.
+6. Choose Racing / Arrows on your phone. Turn the phone sideways.
+7. On the laptop, click Launch NONA Sprint.
+8. On the phone, press Start. Hold Gas and drag the wheel with your other thumb.
+
+Brake slows you down. Handbrake tightens turns. Nitro boosts while its meter lasts.
+Start pauses/resumes. Select resets. Follow the arrows and complete a lap.
+The included race uses direct phone input; desktop keyboard can stay OFF.
+
+NEXT: AN EXISTING WEB RACING GAME
+Open https://jakesgordon.com/games/racer/ on the laptop.
+On the NONA dashboard choose Racing / Arrows.
+Click Enable keyboard, then select the racing game within 4 seconds.
+Gas sends Up. Brake sends Down. The wheel sends Left/Right.
+Use Edit keys for your game if another game uses different controls.
+Stop keyboard mode before switching browser tabs.
+
+The original Neon Run demo is still linked on the dashboard.
+Use a Gamepad preset for its D-pad layout.
+
+README.md explains setup and mappings.
+docs/COMPATIBILITY.md explains external games and cross-play limits.
+docs/ROADMAP.md explains tilt, virtual gamepads and the future Android app.
+VALIDATION.md records the tests and remaining physical-device checks.

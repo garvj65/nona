@@ -82,12 +82,43 @@ def main():
             assert saved.value.status == 200
             dashboard.wait_for_function("() => document.querySelector('[data-action=nitro]').value==='ctrl'")
             assert dashboard.request.get(origin + '/api/session').json()['mapping']['nitro'] == 'ctrl'
+            dashboard.locator('summary').filter(has_text='Save, export or import').click()
+            dashboard.locator('#profile-name').fill('My browser racing profile')
+            with dashboard.expect_response(lambda response: response.url.endswith('/api/profiles')
+                                           and response.request.method == 'POST') as stored:
+                dashboard.locator('#save-profile').click()
+            saved_profile = stored.value.json()['profile']
+            phone.wait_for_function('(id) => document.getElementById("controller-profile").value===id', arg=saved_profile)
+            assert dashboard.request.get(origin + '/api/current-profile').json()['profile']['mapping']['nitro'] == 'ctrl'
+            phone.locator('#controller-profile').select_option('xbox_standard')
+            phone.locator('#dualstick-controls').wait_for(state='visible')
+            dashboard.wait_for_function('() => document.getElementById("output-mode").value==="gamepad"')
+            points = [point('#left-stick', 1, 25), point('#right-stick', 2, -25)]
+            cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': points})
+            phone.wait_for_timeout(150)
+            axes_state = dashboard.request.get(origin + '/api/session').json()
+            assert axes_state['axes']['lx'] > .2 and axes_state['axes']['rx'] < -.2
+            assert axes_state['gamepad_report']['lx'] > 0 and axes_state['gamepad_report']['rx'] < 0
+            assert not axes_state['gamepad']['connected'], 'This test must not pretend to provide a real Windows gamepad'
+            cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
+            phone.set_viewport_size({'width': 393, 'height': 851})
+            phone.wait_for_timeout(150)
+            assert phone.evaluate('() => document.documentElement.scrollWidth<=innerWidth')
+            phone.screenshot(path=str(artifacts / 'dualstick-portrait.png'), full_page=True)
+            phone.set_viewport_size({'width': 851, 'height': 393})
+            phone.wait_for_timeout(150)
+            release = phone.locator('#release').bounding_box()
+            assert release['y'] + release['height'] <= 393, release
+            phone.screenshot(path=str(artifacts / 'dualstick-landscape.png'), full_page=True)
+            tester = desktop.new_page(); tester.goto(origin + '/controller-test', wait_until='networkidle')
+            assert tester.locator('#os-status').inner_text() == 'No controller detected yet.'
             phone.close(); game.wait_for_function('() => race.paused && !connected')
             assert not errors, errors
             print(json.dumps({'dashboard_and_qr': 'passed', 'profile_sync': 'passed',
                               'android_emulated_multi_touch_racing': 'passed', 'wheel_centring': 'passed',
                               'short_tap_pause_resume': 'passed', 'portrait_landscape_overflow': 'passed',
-                              'custom_mapping': 'passed', 'disconnect_pause': 'passed', 'page_errors': errors}))
+                              'custom_mapping': 'passed', 'saved_profile_sync': 'passed', 'dual_sticks': 'passed',
+                              'controller_diagnostics': 'passed', 'disconnect_pause': 'passed', 'page_errors': errors}))
             android.close(); desktop.close(); browser.close()
     finally:
         service.should_exit = True; thread.join(timeout=5); sock.close()

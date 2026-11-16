@@ -13,6 +13,12 @@ SCAN_CODES = {
     "shift": (0x2A, False), "ctrl": (0x1D, False), "esc": (0x01, False),
     "r": (0x13, False), "c": (0x2E, False), "z": (0x2C, False),
     "e": (0x12, False), "q": (0x10, False), "f": (0x21, False),
+    "b": (0x30, False), "g": (0x22, False), "h": (0x23, False), "i": (0x17, False),
+    "j": (0x24, False), "k": (0x25, False), "l": (0x26, False), "m": (0x32, False),
+    "n": (0x31, False), "o": (0x18, False), "t": (0x14, False), "u": (0x16, False),
+    "v": (0x2F, False), "y": (0x15, False), "tab": (0x0F, False), "backspace": (0x0E, False),
+    **{str(value): (code, False) for value, code in zip(range(1, 10), range(0x02, 0x0B))},
+    "0": (0x0B, False),
 }
 
 

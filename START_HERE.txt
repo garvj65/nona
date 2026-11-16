@@ -1,4 +1,4 @@
-NONA 0.2 — YOUR PHONE, NOW A RACING CONTROLLER
+NONA 0.3 — YOUR PHONE, NOW A RACING CONTROLLER
 
 1. Extract the entire download. Close the old PocketPad terminal if it is running.
 2. Install Python 3.10+ if needed: https://www.python.org/downloads/windows/
@@ -29,3 +29,12 @@ README.md explains setup and mappings.
 docs/COMPATIBILITY.md explains external games and cross-play limits.
 docs/ROADMAP.md explains tilt, virtual gamepads and the future Android app.
 VALIDATION.md records the tests and remaining physical-device checks.
+
+ADAPT TO ANOTHER GAME
+Choose a preset, match its keyboard or Xbox bindings to the game, name it,
+and Save profile. Saved profiles are remembered across NONA restarts.
+
+For native games, first try the existing keyboard output.
+Xbox output is optional: read docs/GAMEPAD_SETUP.md before its separate setup.
+Normal setup does not install the retired ViGEmBus driver.
+See docs/NATIVE_GAMES.md for the first native racing/platformer candidates.

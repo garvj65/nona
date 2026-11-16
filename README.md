@@ -4,7 +4,7 @@
 
 NONA turns an Android phone into a Wi-Fi controller for a Windows laptop. Open the controller in your phone browser, pair with a QR code, and play. The laptop runs the game; the phone supplies the controls.
 
-Version **0.2** adds a touchscreen steering wheel, racing pedals, a local time-trial game, and editable keyboard mappings for games hosted on other websites. The original PocketPad / Neon Run starter is preserved.
+Version **0.3** adds saved game profiles, a dual-stick phone layout, and optional Xbox 360/XInput output for native games. The working racing and keyboard paths remain available. [How profiles adapt to games](docs/ADAPTIVE_PROFILES.md) · [Optional Xbox setup](docs/GAMEPAD_SETUP.md) · [Native-game test guide](docs/NATIVE_GAMES.md)
 
 ## Start on Windows
 
@@ -36,7 +36,7 @@ Follow the arrows counterclockwise, through the right, top, and left checkpoints
 
 NONA's companion can translate controller input into Windows keyboard events for the selected game window. This requires no modification to the game website.
 
-A first external target is [Jake Gordon's JavaScript Racer](https://jakesgordon.com/games/racer/). Its published controls use the arrow keys; lower the in-game resolution and draw distance if needed. This is a source-matched compatibility target, not a claim of physical-device verification for this release.
+A first external target is [Jake Gordon's JavaScript Racer](https://jakesgordon.com/games/racer/). Its published controls use the arrow keys; lower the in-game resolution and draw distance if needed. The project owner confirmed successful phone-controlled gameplay with the 0.2 release on their Windows + Android setup.
 
 1. Open the external game on the laptop and read its controls.
 2. Choose **Racing · Arrows** in NONA (or Racing · WASD for a game using WASD).
@@ -64,6 +64,14 @@ To verify the bridge independently, select Racing · WASD, open Notepad, enable 
 
 An online-hosted game is different from online multiplayer. NONA changes your input device; the game controls multiplayer, cross-play, account access, hardware requirements, and whether it accepts generated input. See [the compatibility guide](docs/COMPATIBILITY.md).
 
+## Adaptive controller in 0.3
+
+Choose a layout and output mode that match the game, customize its bindings, then save a named profile. Profiles persist across restarts and can be imported/exported as JSON. The app synchronizes the selected profile to the phone. It does not automatically read arbitrary games’ control settings.
+
+For a native game accepting keyboard input, reuse the existing keyboard backend. For controller input, complete the optional Xbox setup and verify the device in the new Controller test page before playing. The optional backend uses retired ViGEmBus; see its setup guide for the dependency status and manual driver step. Normal setup installs no driver.
+
+Dual-stick mode provides both analog sticks, A/B/X/Y, shoulder buttons and spring-return trigger sliders. Xbox bindings and stick tuning are editable. Switching profiles or outputs disarms both backends, and the phone now has a Release / stop action.
+
 ## What works today
 
 - One paired phone with multi-touch gamepad and racing layouts; QR pairing and connection RTT.
@@ -73,7 +81,7 @@ An online-hosted game is different from online multiplayer. NONA changes your in
 - Shared protocol for future Android clients; old button-only starter packets remain accepted.
 - Key release on normal disconnect, timeout, focus change, mapping changes and normal shutdown.
 
-There is no motion-sensor steering, Android APK, Bluetooth HID, virtual Xbox controller, game streaming, internet relay, or multiple-controller multiplayer in this version. These are separate milestones in [the roadmap](docs/ROADMAP.md).
+There is no motion-sensor steering, Android APK, Bluetooth HID, mouse-only output, game streaming, internet relay, or multiple-controller multiplayer in this version. Xbox output is optional and requires its separate adapter/driver setup. These are separate milestones in [the roadmap](docs/ROADMAP.md).
 
 ## Project map
 
@@ -81,6 +89,8 @@ There is no motion-sensor steering, Android APK, Bluetooth HID, virtual Xbox con
 |---|---|
 | `server.py` | Pairing, controller state, WebSockets, mapping and safety timeout |
 | `windows_input.py` | Windows SendInput adapter and injected-key ownership |
+| `virtual_gamepad.py` | Optional Xbox backend, normalized reports and neutralization |
+| `controller_profiles.py` | Validated templates, saved profiles and atomic persistence |
 | `web/controller.js` | Multi-touch buttons, wheel, reconnect and profile synchronization |
 | `web/dashboard.js` | Pairing, presets, mapping editor and keyboard arming |
 | `web/race-physics.js` | Pure racing simulation, checkpoints, laps and boost |
@@ -129,4 +139,4 @@ GitHub Actions runs protocol/physics checks on Ubuntu and Windows and browser ch
 
 Keep the helper on a trusted private network. Local HTTP/WS is unencrypted; do not expose the port to the internet. Abrupt process termination or Windows rejecting a release cannot guarantee key cleanup, so release controls before killing the process.
 
-NONA grew from a working Windows + Android prototype. The original user's successful connection/gameplay report is the starting point; racing and third-party games need their own device tests.
+The project owner has confirmed NONA Sprint and the external JavaScript Racer on Windows + Android. Native-game and optional Xbox-driver tests remain separate acceptance checks; successful web racing does not establish those automatically.

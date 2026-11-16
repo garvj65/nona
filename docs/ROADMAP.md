@@ -1,5 +1,9 @@
 # NONA roadmap
 
+## 0.3: adaptive profiles and optional Xbox output
+
+Implemented: persistent named profiles, import/export, dual sticks and trigger sliders, keyboard/Xbox output selection, optional vgamepad backend, tuning, OS-controller diagnostics and an emergency stop. Complete GAMEPAD_SETUP.md and the native-game acceptance checks before marking physical gamepad gameplay verified.
+
 ## 0.2: racing first
 
 Included: a touch wheel, independent pedals, handbrake/nitro, presets, editable mappings, NONA Sprint, and a documented external web-racer target.
@@ -12,9 +16,9 @@ Serve the controller through trusted HTTPS with WSS, or add a native client. Add
 
 Acceptance: steering follows tilt on the real Android phone, recalibrates, centres safely on sensor loss, and still releases on disconnect.
 
-## Then: native games and analog gamepads
+## Continue: native games and backend maintenance
 
-Introduce an input-backend contract separate from the protocol. Evaluate a maintained, appropriately licensed Windows virtual-gamepad stack and its installation requirements. Forward normalized steering/throttle/brake as analog axes and map buttons. Add an actual compatibility matrix from games tested on the user's laptop. Investigate macOS/Linux backends separately.
+The 0.3 backend separates normalized controls from keyboard and optional Xbox output. The current Xbox route depends on retired ViGEmBus; evaluate maintained alternatives as they become practical. Add an actual compatibility matrix from games tested on the user's laptop. Investigate macOS/Linux backends separately.
 
 Acceptance: one supported native game recognizes the virtual device, holds proportional inputs correctly, and releases/reconnects reliably. Do not label keyboard injection as gamepad emulation.
 

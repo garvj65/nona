@@ -1,0 +1,2 @@
+# Optional. Install through SETUP_XBOX_OUTPUT.bat so its bundled driver hook is skipped.
+vgamepad==0.2.0; sys_platform == "win32"

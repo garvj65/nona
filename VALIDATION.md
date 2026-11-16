@@ -1,32 +1,32 @@
-# Validation — NONA 0.2
+# Validation — NONA 0.3
 
 Recorded: 2026-11-16.
 
+## Physical user reports
+
+The project owner confirmed that NONA Sprint and the external JavaScript Racer both work with the Windows laptop and Android phone. This verifies those 0.2 paths on their devices. Native-game and optional Xbox-device gameplay are separate checks.
+
 ## Passed locally
 
-- **23 Python unittest cases:** original pairing/origin/exclusivity/disconnect regressions, input lifecycle and mocked Windows ABI; racing pedal aliases; wheel hysteresis and centring; legacy button-only packets; controller-driven preset changes; editable mapping validation and preset restoration; malformed, non-finite and out-of-range axes; race routes/assets.
-- **9 Node simulation tests:** stopped/paused behavior, acceleration and brake priority, finite nitro/recharge, proportional steering, grass slowdown, ordered checkpoints, finish-line rejection without checkpoints, bounded frame steps, reset state.
+- **38 Python tests:** existing input/pairing/racing regressions, saved-profile persistence and atomic write failure, invalid/corrupt import handling, Xbox report mapping, axis tuning/Y conversion, output switching, focus/disconnect/timeout neutralization, and phone emergency stop.
+- **9 Node racing simulation tests:** acceleration, brake priority, nitro, proportional steering, grass slowdown, ordered lap checkpoints and bounded frame steps.
 
-The Windows INPUT layout/scan-code tests use a mocked API. They are not physical Windows gameplay tests.
+Gamepad mapping/lifecycle tests use fake backends and a mocked vgamepad module. They do not establish that a real Windows virtual controller is installed or accepted by a game.
 
-## Rendered browser checks
+## Browser and CI checks
 
-`tests/browser_smoke.py` starts a real local server and tests dashboard/QR rendering, Android-emulated profile synchronization, simultaneous wheel + gas touches, vehicle response, centring/release, short pause/resume taps, portrait/landscape overflow, mapping persistence within the running session, and disconnect pause. GitHub Actions runs it on Ubuntu Chromium. Check the repository's Actions tab for the actual run result; adding the test itself is not evidence it passed.
+The repository workflow runs Python/physics tests on Windows and Ubuntu. The Windows job also checks that the optional Python adapter can be installed with its bundled driver hook explicitly skipped. It does not install ViGEmBus or run a game.
 
-Local browser execution in the build environment is unavailable because its Chromium Unix socket setup is restricted. The JavaScript simulation tests do not replace a rendering check.
+`tests/browser_smoke.py` runs actual Chromium with an Android-emulated viewport and touch input. It exercises the existing race, two-touch steering/gas, saved-profile synchronization, dual analog sticks, mapping changes, diagnostics, portrait/landscape overflow and disconnect pause. See the latest Actions run for the actual result; test code being present is not proof of a passed run. Test screenshots are retained as CI artifacts for review.
 
-## User evidence and remaining device checks
+This local execution environment cannot launch Chromium because of its Unix socket restriction, so rendered checks run through GitHub Actions. Android emulation does not replace physical Android testing.
 
-The user reported successful pairing and gameplay for the earlier Windows + Android starter on 2026-11-16. This confirms that baseline path on those devices, not the new racing layout or the Windows keyboard bridge to third-party games.
+## Remaining acceptance checks for 0.3
 
-Before marking the new racing feature physically verified:
+1. Update NONA, pair the real phone, and confirm existing keyboard/browser racing still works.
+2. Save a custom profile, restart NONA, load it and confirm its layout, bindings, output and tuning persist.
+3. Try a native game using keyboard mode; SuperTuxKart and SuperTux are documented candidates, not verified results.
+4. If choosing the optional legacy Xbox backend, complete GAMEPAD_SETUP.md yourself. Verify the virtual controller in the tester's browser-detected gamepad section or joy.cpl.
+5. Verify analog steering/sticks, each trigger/button, focus changes, emergency stop, disconnect and reconnect against a real game. Record title/version, laptop specifications and settings before marking that game verified.
 
-1. Launch NONA 0.2 and pair the real Android phone.
-2. Choose Racing and hold Gas while moving the wheel. Test both portrait and landscape.
-3. Complete one NONA Sprint lap, test Brake / Handbrake / Nitro, and verify Start / Select.
-4. Release the wheel and pedals; confirm neutral input. Lock/reconnect the phone and confirm pause plus keyboard disarm.
-5. Verify the keyboard bridge in Notepad using Racing · WASD and Gas → w.
-6. Play Jake Gordon's JavaScript Racer with Racing · Arrows, and record the result, laptop specifications and performance settings.
-7. Test another keyboard-controlled title only after those pass. Do not infer gamepad-only, native-game or cross-play support from one successful browser game.
-
-No physical motion sensors, virtual gamepad driver, Android APK, game streaming, multiple-player sessions or third-party multiplayer integration are implemented or claimed in 0.2.
+Automatic game-control detection, mouse-only output, motion sensors, an Android APK, internet relay, game streaming and multiple-controller multiplayer are not implemented in 0.3.

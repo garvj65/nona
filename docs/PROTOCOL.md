@@ -1,4 +1,4 @@
-# Controller protocol 0.2
+# Controller protocol 0.3
 
 Connect to `/ws/controller?token=<per-launch pairing token>` from the controller's own origin. One controller can own the room. Profiles and mappings are room-local, reset on server restart, and are not persisted yet.
 
@@ -28,3 +28,12 @@ Laptop-local `/ws/monitor` provides full `status` packets on changes plus period
 Mapping values use a small allowed set of game keys, not arbitrary commands. An empty mapping value disables that action. Several held actions may map to the same key; the key is released only after all those actions are released.
 
 Local transport currently uses unencrypted HTTP/WS on a trusted LAN. The protocol is not an internet-exposed remote-control service.
+
+
+## 0.3 additions
+
+Packets can also carry `axes`: `{"lx":0.5,"ly":-0.2,"rx":0,"ry":0,"lt":0,"rt":0.6}`. Stick axes use [-1,1], with Y positive down on the phone; triggers use [0,1]. Missing axes default to zero. The Xbox adapter flips Y to XInput convention. New actions are x, y, lb, rb, lt and rt; all 16 action names are allowed, without duplicates. `disarm:true` is a phone emergency stop. Legacy button/steering packets remain accepted.
+
+`config` acknowledgements include `revision`, `output_mode`, available named profiles, Xbox bindings and tuning. The phone clears held state on revision changes. Status exposes raw axes, effective digital directions, the desired Xbox report and separate virtual-device diagnostics. Desired reports are not proof of OS recognition.
+
+Profiles now persist through the normal launcher; the selected profile itself resets to the safe default on startup. Host-admin routes add /api/profiles, /api/output, /api/output/arm, /api/pad-mapping, /api/tuning and /api/gamepad. Old /api/keyboard remains an arm/stop alias for the selected output.

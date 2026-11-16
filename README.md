@@ -4,15 +4,15 @@
 
 NONA turns an Android phone into a Wi-Fi controller for a Windows laptop. Open the controller in your phone browser, pair with a QR code, and play. The laptop runs the game; the phone supplies the controls.
 
-Version **0.4** adds calibrated phone tilt steering and an optional trusted local HTTPS setup. Saved game profiles, dual sticks and optional Xbox output remain available. The working racing and keyboard paths remain available. [How profiles adapt to games](docs/ADAPTIVE_PROFILES.md) · [Optional Xbox setup](docs/GAMEPAD_SETUP.md) · [Native-game test guide](docs/NATIVE_GAMES.md)
+Version **0.5** adds a floating movement stick, swipe camera and optional gyro camera assistance for the next Roblox test. Racing tilt, saved game profiles, dual sticks and optional Xbox output remain available. [Mobile controls setup and test](docs/MOBILE_CONTROLS.md). [How profiles adapt to games](docs/ADAPTIVE_PROFILES.md) · [Optional Xbox setup](docs/GAMEPAD_SETUP.md) · [Native-game test guide](docs/NATIVE_GAMES.md)
 
-## Motion test first
+## Current device results and next test
 
-The owner confirmed NONA Sprint and JavaScript Racer work, while SuperTuxKart and SuperTux do not run on this laptop. Reuse the working racer for motion. Read [MOTION_TEST.md](docs/MOTION_TEST.md), run PREPARE_MOTION_HTTPS.bat, complete its manual certificate-trust steps, then use START_MOTION_WINDOWS.bat. Choose Racing, Enable tilt, hold neutral and Calibrate. Gas/Brake remain touch controls.
+The owner confirmed physical tilt works in NONA Sprint and JavaScript Racer, with around 10–40 ms controller RTT, and that Release / stop works. Screen lock and deliberate Wi-Fi interruption remain untested. An unnamed Roblox obby accepted keyboard controls but felt restricted without camera input. Test the new **Roblox · Mobile movement + look** profile using [MOBILE_CONTROLS.md](docs/MOBILE_CONTROLS.md). SuperTuxKart and SuperTux do not run on this laptop. Read [MOTION_TEST.md](docs/MOTION_TEST.md), run PREPARE_MOTION_HTTPS.bat, complete its manual certificate-trust steps, then use START_MOTION_WINDOWS.bat. Choose Racing, Enable tilt, hold neutral and Calibrate. Gas/Brake remain touch controls.
 
 [Alternative games](docs/NATIVE_GAMES.md) · [Roblox test gate](docs/ROBLOX_TEST.md) · [PC/Android v1 and later PS5 direction](docs/V1_PLAN.md)
 
-This is a pre-v1 motion prototype. Physical motion and Roblox gameplay must pass before the requested review, security checks and application packaging. The PS5 controller bridge remains a separate later version.
+This is a pre-v1 controls prototype. Complete the movement/camera and lifecycle device checks before native-app acceptance, release security review and packaging. [Native app pairing](docs/APP_PAIRING.md) is planned to keep trust inside NONA rather than require a device-wide test CA. The PS5 controller bridge remains a separate later version.
 
 ## Start on Windows
 
@@ -85,11 +85,12 @@ Dual-stick mode provides both analog sticks, A/B/X/Y, shoulder buttons and sprin
 - One paired phone with multi-touch gamepad and racing layouts; QR pairing and connection RTT.
 - Proportional touch steering, gas, brake, handbrake and nitro.
 - A lightweight Canvas racing time trial and the original Neon Run game.
-- Windows keyboard injection, four presets, and per-action key remapping.
+- Windows keyboard/mouse injection, named presets, per-action key remapping, floating WASD movement and relative swipe camera.
+- Optional gyro camera assistance while the right look surface is held, with bounded sensor deltas and a coalesced 50 Hz continuous-input loop.
 - Shared protocol for future Android clients; old button-only starter packets remain accepted.
 - Key release on normal disconnect, timeout, focus change, mapping changes and normal shutdown.
 
-There is no Android APK, Bluetooth HID, mouse-only output, game streaming, internet relay, or multiple-controller multiplayer in this version. Xbox output is optional and requires its separate adapter/driver setup. These are separate milestones in [the roadmap](docs/ROADMAP.md).
+There is no Android APK, Bluetooth HID, game streaming, internet relay, or multiple-controller multiplayer in this version. The new mouse/gyro path is implemented and needs physical Roblox acceptance. Xbox output is optional and requires its separate adapter/driver setup. These are separate milestones in [the roadmap](docs/ROADMAP.md).
 
 ## Project map
 
@@ -100,7 +101,8 @@ There is no Android APK, Bluetooth HID, mouse-only output, game streaming, inter
 | `virtual_gamepad.py` | Optional Xbox backend, normalized reports and neutralization |
 | `controller_profiles.py` | Validated templates, saved profiles and atomic persistence |
 | `web/controller.js` | Touch/motion UI, reconnect and profile synchronization |
-| `web/motion.js` | Orientation mapping, calibration, dead zone and smoothing |
+| `web/motion.js` | Racing orientation mapping, calibration, dead zone and smoothing |
+| `web/mobile-input.js` | Floating-stick math and bounded angular-velocity camera assistance |
 | `local_tls.py` | Optional local HTTPS certificates, without installing trust |
 | `web/dashboard.js` | Pairing, presets, mapping editor and keyboard arming |
 | `web/race-physics.js` | Pure racing simulation, checkpoints, laps and boost |
@@ -125,7 +127,7 @@ For another port: `python run.py --port 8766`. Protocol and input lifecycle chec
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-With Node 22+ available: `node --test tests/race.test.cjs tests/motion.test.cjs`.
+With Node 22+ available: `node --test tests/race.test.cjs tests/motion.test.cjs tests/mobile.test.cjs`.
 
 Optional rendered Android-emulation browser check:
 

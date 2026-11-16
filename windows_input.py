@@ -49,7 +49,7 @@ class WindowsKeyboard:
             _anonymous_ = ("payload",)
             _fields_ = [("type", u32), ("payload", INPUTUNION)]
 
-        self.INPUT, self.KEYBDINPUT = INPUT, KEYBDINPUT
+        self.INPUT, self.KEYBDINPUT, self.MOUSEINPUT = INPUT, KEYBDINPUT, MOUSEINPUT
         self.user32 = ctypes.WinDLL("user32", use_last_error=True)
         self.user32.SendInput.argtypes = [u32, ctypes.POINTER(INPUT), ctypes.c_int]
         self.user32.SendInput.restype = u32
@@ -79,9 +79,23 @@ class WindowsKeyboard:
         if self.user32.SendInput(1, ctypes.byref(event), ctypes.sizeof(event)) != 1:
             raise OSError(ctypes.get_last_error(), "Windows did not accept the keyboard input")
 
+    def _mouse(self, dx=0, dy=0, flags=0):
+        if not self.available:
+            raise RuntimeError("Desktop mouse mode requires Windows.")
+        event = self.INPUT(type=0)
+        event.mi = self.MOUSEINPUT(dx, dy, 0, flags, 0, 0)
+        if self.user32.SendInput(1, ctypes.byref(event), ctypes.sizeof(event)) != 1:
+            raise OSError(ctypes.get_last_error(), "Windows did not accept the mouse input")
+
+    def mouse_move(self, dx, dy):
+        self._mouse(dx, dy, 0x0001)  # Relative motion; never warp the cursor.
+
+    def mouse_right(self, pressed):
+        self._mouse(flags=0x0008 if pressed else 0x0010)
+
 
 class InputEngine:
-    """Own only keys we injected; release before profile/focus/session transitions."""
+    """Own injected keys/right-click; release on focus/profile/session transitions."""
     def __init__(self, backend=None):
         self.backend = backend or WindowsKeyboard()
         self.held = set()
@@ -89,8 +103,17 @@ class InputEngine:
         self.target = 0
         self.target_title = ""
         self.error = ""
+        self.right_held = False
+        self.mouse_remainder = [0.0, 0.0]
 
     def release_all(self):
+        self.mouse_remainder = [0.0, 0.0]
+        if self.right_held:
+            try:
+                self.backend.mouse_right(False)
+                self.right_held = False
+            except OSError as exc:
+                self.error = str(exc)
         for key in sorted(self.held.copy()):
             try:
                 self.backend.send(key, False)
@@ -106,7 +129,7 @@ class InputEngine:
 
     def arm(self):
         self.disarm()
-        if self.held:
+        if self.held or self.right_held:
             raise RuntimeError("Windows did not release previous inputs. Stop and try again.")
         if not self.backend.available:
             raise RuntimeError("Desktop keyboard mode requires Windows.")
@@ -131,6 +154,28 @@ class InputEngine:
             for key in sorted(desired - self.held):
                 self.backend.send(key, True)
                 self.held.add(key)
+        except OSError as exc:
+            self.error = str(exc)
+            self.disarm()
+
+    def apply_pointer(self, dx=0, dy=0, right=False):
+        if not self.armed:
+            self.release_all()
+            return
+        if self.backend.foreground() != self.target:
+            self.disarm()
+            return
+        try:
+            if right != self.right_held:
+                self.backend.mouse_right(right)
+                self.right_held = right
+                if not right:
+                    self.mouse_remainder = [0.0, 0.0]
+            values = [dx + self.mouse_remainder[0], dy + self.mouse_remainder[1]]
+            steps = [int(value) for value in values]
+            self.mouse_remainder = [value - step for value, step in zip(values, steps)]
+            if any(steps):
+                self.backend.mouse_move(*steps)
         except OSError as exc:
             self.error = str(exc)
             self.disarm()

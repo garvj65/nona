@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
 function monitor(){
   const ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws/monitor`);
-  ws.onmessage=event=>{const state=JSON.parse(event.data);$('host-status').textContent=`Phone: ${state.connected?'connected':'disconnected'} · Output: ${state.output_mode} ${state.armed?'ON':'off'} · Xbox device: ${state.gamepad.connected?'connected':'not connected'}`;$('host-report').textContent=JSON.stringify({buttons:state.buttons,axes:state.axes,steering:state.steering,desired_xbox_report:state.gamepad_report},null,2);};
+  ws.onmessage=event=>{const state=JSON.parse(event.data);$('host-status').textContent=`Phone: ${state.connected?'connected':'disconnected'} · Output: ${state.output_mode} ${state.armed?'ON':'off'} · Xbox device: ${state.gamepad.connected?'connected':'not connected'}`;$('host-report').textContent=JSON.stringify({buttons:state.buttons,axes:state.axes,steering:state.steering,camera_active:state.look_active,camera_settings:state.look,desired_xbox_report:state.gamepad_report},null,2);};
   ws.onclose=()=>{$('host-status').textContent='NONA server offline';setTimeout(monitor,1500);};
 }
 function poll(){

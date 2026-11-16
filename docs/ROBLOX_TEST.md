@@ -10,6 +10,8 @@ Install Roblox from https://www.roblox.com/ if you choose to test it. Sign in yo
 
 ## Keyboard starter profile
 
+The owner tried an unnamed obby on 2026-11-16: keyboard controls worked, but movement and camera felt restricted. No experience URL or independent laptop frame-rate result was supplied. The old starter does not supply mouse camera control. For the next test use **Roblox · Mobile movement + look**, described in MOBILE_CONTROLS.md; its new mouse/gyro route still requires physical Roblox verification.
+
 Choose **Roblox · Keyboard starter**:
 
 - D-pad: WASD movement.
@@ -33,6 +35,6 @@ Test normal controls first. For a racing experience, choose a Racing profile and
 
 Record the experience URL/name, laptop specifications, client version, chosen profile, graphics settings, inputs tested, a sustained playable session and disconnect behavior. At minimum, complete a simple movement/jump task and verify camera operation for the full-controller route. Have a working physical motion result and a working Roblox result before moving to the v1 review/security/packaging gate in V1_PLAN.md.
 
-This repository supplies profiles and a test procedure. It does not claim Roblox gameplay was verified by CI or on the owner's laptop.
+The owner's report establishes partial keyboard compatibility in one unnamed experience. It does not establish a smooth full-controller experience, physical Xbox compatibility or a pass for the new mouse/gyro route. CI does not run Roblox gameplay.
 
 Primary references: https://create.roblox.com/docs/input/gamepad · https://create.roblox.com/docs/input/mouse-and-keyboard

@@ -2,6 +2,10 @@
 
 The accepted ordered release gates now live in [V1_PLAN.md](V1_PLAN.md): physical motion, then Roblox, then refinement/review/security and PC+Android packaging. The PS5 phone-controller bridge is separate and later.
 
+## 0.5 mobile controls prototype
+
+The owner's physical tilt and Stop tests passed. A Roblox obby accepted keyboard input but lacked usable camera control. Added floating WASD movement, relative swipe mouse look, optional clutched gyro camera assistance, configurable camera settings and a coalesced continuous-input loop. Native-game acceptance and screen-lock/Wi-Fi-loss tests remain open. See MOBILE_CONTROLS.md and APP_PAIRING.md; the latter is the planned native-app trust contract, not an APK implementation.
+
 ## 0.4 motion prototype
 
 Implemented calibrated orientation-aware tilt, touch fallback, sensor-loss release, optional local HTTPS setup, Roblox starter profiles and replacement game candidates. Real Android sensor and Roblox gameplay checks remain required.
@@ -16,7 +20,7 @@ Included: a touch wheel, independent pedals, handbrake/nitro, presets, editable 
 
 Acceptance: play a lap with two simultaneous touches; release the wheel and pedals; recover from disconnect; verify the Windows bridge in Notepad; drive the external racer and record the result.
 
-## Next: motion steering
+## Complete: motion steering lifecycle checks
 
 Serve the controller through trusted HTTPS with WSS, or add a native client. Add a user-triggered sensor-permission action, orientation detection, a neutral-position calibration, dead zone, smoothing and sensitivity. Handle device rotation and sensor loss. Never depend on disabling browser security. Sensor support varies by browser and device.
 

@@ -11,6 +11,22 @@ sys.path.insert(0, str(ROOT))
 import uvicorn
 from playwright.sync_api import sync_playwright
 from server import create_app
+from windows_input import InputEngine
+
+
+class BrowserDesktop:
+    """Fake desktop output for rendered input-path tests, not a real Windows device."""
+    available = True
+
+    def __init__(self):
+        self.pointer_events = []
+        self.key_events = []
+
+    def foreground(self): return 41
+    def title(self, window): return 'Browser test game'
+    def send(self, key, pressed): self.key_events.append((key, pressed))
+    def mouse_right(self, pressed): self.pointer_events.append(('right', pressed))
+    def mouse_move(self, dx, dy): self.pointer_events.append(('move', dx, dy))
 
 
 def main():
@@ -18,7 +34,8 @@ def main():
     sock.bind(('127.0.0.1', 0)); sock.listen(10)
     port = sock.getsockname()[1]
     origin = f'http://127.0.0.1:{port}'
-    app = create_app(port=port, addresses={'127.0.0.1', 'localhost', '192.168.1.10'})
+    output = BrowserDesktop()
+    app = create_app(port=port, addresses={'127.0.0.1', 'localhost', '192.168.1.10'}, engine=InputEngine(output))
     service = uvicorn.Server(uvicorn.Config(app, log_level='error', access_log=False, proxy_headers=False))
     thread = threading.Thread(target=lambda: service.run(sockets=[sock]), daemon=True)
     thread.start()
@@ -146,6 +163,65 @@ def main():
             release = phone.locator('#release').bounding_box()
             assert release['y'] + release['height'] <= 393, release
             phone.screenshot(path=str(artifacts / 'dualstick-landscape.png'), full_page=True)
+            # Floating movement + real multi-touch swipe look + jump reach the fake desktop.
+            phone.locator('#controller-profile').select_option('roblox_mobile')
+            phone.locator('#look-settings').wait_for(state='visible')
+            phone.wait_for_timeout(100)
+            assert phone.evaluate('document.documentElement.scrollWidth<=innerWidth')
+            release = phone.locator('#release').bounding_box()
+            assert release['y'] + release['height'] <= 393, release
+            app.state.room.engine.arm()
+            left, right = point('#left-stick', 31), point('#right-stick', 32)
+            cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [left, right]})
+            phone.wait_for_timeout(80)
+            assert app.state.room.axes['lx'] == 0, 'Floating touch-down must not move the character'
+            left = {**left, 'x': left['x']+45, 'y': left['y']-30}
+            right = {**right, 'x': right['x']+25, 'y': right['y']+10}
+            cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [left, right]})
+            phone.wait_for_function("() => axes.lx>.2 && axes.ly<-.2")
+            phone.wait_for_timeout(100)
+            assert app.state.room.engine.held == {'w', 'd'}, app.state.room.engine.held
+            assert app.state.room.engine.right_held
+            assert any(event[0]=='move' and event[1]>0 for event in output.pointer_events), output.pointer_events
+            jump = point('#dualstick-controls [data-button=a]', 33)
+            cdp.send('Input.dispatchTouchEvent', {'type':'touchStart', 'touchPoints':[left,right,jump]})
+            phone.wait_for_timeout(100)
+            assert app.state.room.engine.held == {'w', 'd', 'space'}, app.state.room.engine.held
+            phone.screenshot(path=str(artifacts/'mobile-controls-landscape.png'),full_page=True)
+            moves = [event for event in output.pointer_events if event[0]=='move']
+            phone.wait_for_timeout(250)
+            assert [event for event in output.pointer_events if event[0]=='move'] == moves, 'Relative motion was replayed'
+            cdp.send('Input.dispatchTouchEvent', {'type':'touchEnd','touchPoints':[]})
+            phone.wait_for_timeout(100)
+            assert not app.state.room.engine.held and not app.state.room.engine.right_held
+            # Synthetic angular velocity confirms gyro clutched by look touch and neutral on sensor loss.
+            phone.locator('#enable-gyro').click()
+            phone.evaluate('''() => {
+              window.__gyroTestTimer=setInterval(()=>window.dispatchEvent(new DeviceMotionEvent('devicemotion',{
+                rotationRate:{alpha:60,beta:30,gamma:0},interval:20
+              })),20);
+            }''')
+            phone.wait_for_function("() => document.getElementById('gyro-status').textContent.includes('Gyro ready')")
+            app.state.room.engine.arm()
+            before = len(output.pointer_events)
+            phone.wait_for_timeout(100)
+            assert len(output.pointer_events)==before, 'Gyro must not move the camera without the look clutch'
+            right = point('#right-stick', 34)
+            cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[right]})
+            phone.wait_for_timeout(150)
+            assert any(event[0]=='move' for event in output.pointer_events[before:])
+            phone.evaluate('() => clearInterval(window.__gyroTestTimer)')
+            phone.wait_for_function("() => document.getElementById('gyro-status').textContent.includes('readings stopped')")
+            assert not app.state.room.engine.armed and not app.state.room.engine.right_held
+            cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
+            phone.evaluate("() => Object.defineProperty(DeviceMotionEvent,'requestPermission',{configurable:true,value:async()=> 'denied'})")
+            phone.locator('#enable-gyro').click()
+            phone.wait_for_function("() => document.getElementById('gyro-status').textContent.includes('not granted')")
+            phone.evaluate('() => delete DeviceMotionEvent.requestPermission')
+            phone.set_viewport_size({'width':393,'height':851})
+            phone.wait_for_timeout(100)
+            assert phone.evaluate('document.documentElement.scrollWidth<=innerWidth')
+            phone.screenshot(path=str(artifacts/'mobile-controls-portrait.png'),full_page=True)
             tester = desktop.new_page(); tester.goto(origin + '/controller-test', wait_until='networkidle')
             assert tester.locator('#os-status').inner_text() == 'No controller detected yet.'
             phone.close(); game.wait_for_function('() => race.paused && !connected')
@@ -156,6 +232,8 @@ def main():
                               'custom_mapping': 'passed', 'saved_profile_sync': 'passed', 'dual_sticks': 'passed',
                               'controller_diagnostics': 'passed', 'simulated_tilt': 'passed',
                               'sensor_loss_releases_gas_and_steering': 'passed', 'motion_permission_denial': 'passed',
+                              'floating_movement_swipe_look_jump': 'passed', 'mouse_delta_not_replayed': 'passed',
+                              'gyro_clutch_and_sensor_loss': 'passed', 'gyro_permission_denial': 'passed',
                               'disconnect_pause': 'passed', 'page_errors': errors}))
             android.close(); desktop.close(); browser.close()
     finally:

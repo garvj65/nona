@@ -1,5 +1,5 @@
 const $=id=>document.getElementById(id);
-let admin='',urls=[],socket,keyOptions=[],padOptions=[],currentProfile='',catalogue='',lastMapping='',lastPad='',lastTuning='';
+let admin='',urls=[],socket,keyOptions=[],padOptions=[],currentProfile='',catalogue='',lastMapping='',lastPad='',lastTuning='',lastLook='';
 const names={up:'↑',down:'↓',left:'←',right:'→',a:'A / Gas',b:'B / Brake',x:'X',y:'Y',lb:'LB',rb:'RB',lt:'LT',rt:'RT',start:'Start',select:'Select',handbrake:'Handbrake',nitro:'Nitro'};
 function editor(container,mapping,options){
   const complete={...Object.fromEntries(Object.keys(names).map(key=>[key,''])),...mapping};
@@ -18,6 +18,9 @@ function display(status){
   const signature=JSON.stringify(status.profiles);
   if(catalogue!==signature){catalogue=signature;$('profile').replaceChildren(...status.profiles.map(profile=>{const option=document.createElement('option');option.value=profile.id;option.textContent=profile.name;return option;}));}
   currentProfile=status.profile;$('profile').value=status.profile;$('output-mode').value=status.output_mode;
+  $('camera-settings').classList.toggle('hidden',status.layout!=='dualstick'||status.output_mode!=='keyboard');
+  const look=JSON.stringify(status.look);
+  if(look!==lastLook){lastLook=look;$('camera-enabled').checked=status.look.enabled;$('camera-drag').checked=status.look.hold_right;$('camera-gain').value=status.look.sensitivity;}
   const mapping=JSON.stringify(status.mapping),pad=JSON.stringify(status.pad_mapping),tuning=JSON.stringify(status.tuning);
   if(mapping!==lastMapping){lastMapping=mapping;editor('mapping-fields',status.mapping,keyOptions);}
   if(pad!==lastPad){lastPad=pad;editor('pad-fields',status.pad_mapping,padOptions);}
@@ -44,6 +47,7 @@ $('pad-connect').onclick=()=>post('/api/gamepad',{action:'connect'});$('pad-disc
 $('save-mapping').onclick=()=>post('/api/mapping',{mapping:bindings('mapping-fields')});
 $('save-pad-mapping').onclick=()=>post('/api/pad-mapping',{mapping:bindings('pad-fields')});
 $('save-tuning').onclick=()=>post('/api/tuning',{deadzone:Number($('deadzone').value),sensitivity:Number($('sensitivity').value),invert_y:$('invert-y').checked});
+$('save-camera').onclick=()=>post('/api/look',{enabled:$('camera-enabled').checked,hold_right:$('camera-drag').checked,sensitivity:Number($('camera-gain').value)});
 function saveProfile(copy){const name=$('profile-name').value.trim();if(!name){showError('Enter a game/profile name first.');return;}post('/api/profiles',{name,...(!copy&&currentProfile.startsWith('saved_')?{replace_id:currentProfile}:{})});}
 $('save-profile').onclick=()=>saveProfile(false);$('copy-profile').onclick=()=>saveProfile(true);
 $('export-profile').onclick=async()=>{try{const response=await fetch('/api/current-profile');if(!response.ok)throw new Error('Could not export profile.');const profile=await response.json(),url=URL.createObjectURL(new Blob([JSON.stringify(profile,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='NONA_game_profile.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(error){showError(error.message);}};

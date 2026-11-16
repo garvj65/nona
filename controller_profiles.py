@@ -29,6 +29,7 @@ DEFAULT_PAD = {"up": "dpad_up", "down": "dpad_down", "left": "dpad_left", "right
                "a": "a", "b": "b", "x": "x", "y": "y", "lb": "lb", "rb": "rb", "lt": "lt", "rt": "rt",
                "start": "start", "select": "back", "handbrake": "x", "nitro": "a"}
 TUNING = {"deadzone": 0.12, "sensitivity": 1.0, "invert_y": False}
+LOOK = {"enabled": False, "sensitivity": 1.0, "hold_right": True}
 
 
 def mapping_valid(value, allowed):
@@ -58,8 +59,18 @@ def validate_profile(value):
             raise ValueError(f"{key} must be between {lo} and {hi}.")
     if type(tuning["invert_y"]) is not bool:
         raise ValueError("invert_y must be true or false.")
+    look = value.get("look", LOOK)
+    if not isinstance(look, dict) or set(look) - set(LOOK):
+        raise ValueError("Unsupported camera settings.")
+    look = {**LOOK, **look}
+    if type(look["enabled"]) is not bool or type(look["hold_right"]) is not bool:
+        raise ValueError("Camera switches must be true or false.")
+    if type(look["sensitivity"]) not in {int, float} or not .25 <= look["sensitivity"] <= 4:
+        raise ValueError("Camera sensitivity must be between 0.25 and 4.")
+    if look["enabled"] and (layout != "dualstick" or mode != "keyboard"):
+        raise ValueError("Swipe mouse look requires the dual-stick keyboard layout.")
     return {"name": name.strip(), "layout": layout, "output_mode": mode,
-            "mapping": dict(mapping), "pad_mapping": dict(pad), "tuning": tuning}
+            "mapping": dict(mapping), "pad_mapping": dict(pad), "tuning": tuning, "look": look}
 
 
 def templates():
@@ -81,7 +92,13 @@ def templates():
                                 'mapping': {**PROFILES['wasd'], 'a': 'space', 'b': 'shift', 'x': 'e', 'y': 'q',
                                             'start': 'esc', 'select': 'tab'}}
     result['roblox_gamepad'] = {**copy.deepcopy(result['xbox_standard']), 'name': 'Roblox · Xbox candidate'}
-    return result
+    result['roblox_mobile'] = {**copy.deepcopy(result['roblox_keyboard']),
+                               'name': 'Roblox · Mobile movement + look', 'layout': 'dualstick',
+                               'look': {**LOOK, 'enabled': True}}
+    result['mouse_look'] = {**copy.deepcopy(result['roblox_mobile']),
+                            'name': 'Mouse look · First person',
+                            'look': {**LOOK, 'enabled': True, 'hold_right': False}}
+    return {key: validate_profile(value) for key, value in result.items()}
 
 
 class ProfileStore:

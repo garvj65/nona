@@ -75,6 +75,8 @@ class Room:
         self.layout = selected["layout"]
         self.output_mode = selected["output_mode"]
         self.tuning = selected["tuning"]
+        self.look = selected["look"]
+        self.look_active = False
         self.revision = 0
         self.engine = engine or InputEngine()
         self.pad = GamepadEngine(self.engine.backend, gamepad_backend)
@@ -100,6 +102,7 @@ class Room:
         self.vertical_direction = 0
         self.steering = 0.0
         self.steer_direction = 0
+        self.look_active = False
         self.arm_at = 0.0
         self.engine.disarm()
         self.pad.disarm()
@@ -112,7 +115,8 @@ class Room:
 
     def profile_data(self, name="Custom game"):
         return {"name": name, "layout": self.layout, "output_mode": self.output_mode,
-                "mapping": dict(self.mapping), "pad_mapping": dict(self.pad_mapping), "tuning": dict(self.tuning)}
+                "mapping": dict(self.mapping), "pad_mapping": dict(self.pad_mapping),
+                "tuning": dict(self.tuning), "look": dict(self.look)}
 
     def set_profile(self, name):
         selected = self.store.get(name)
@@ -120,6 +124,7 @@ class Room:
         self.profile = name
         self.mapping, self.pad_mapping = selected["mapping"], selected["pad_mapping"]
         self.layout, self.output_mode, self.tuning = selected["layout"], selected["output_mode"], selected["tuning"]
+        self.look = selected["look"]
         self.revision += 1
         self.notify()
 
@@ -131,6 +136,7 @@ class Room:
         was_armed = active.armed
         if self.output_mode == "keyboard":
             self.engine.apply(self.desired_keys())
+            self.engine.apply_pointer(right=self.look_active and self.look["enabled"] and self.look["hold_right"])
             self.pad.apply(neutral_report())
         else:
             self.pad.apply(self.pad_report())
@@ -144,14 +150,15 @@ class Room:
     def config(self):
         return {"profile": self.profile, "layout": self.layout, "revision": self.revision,
                 "mapping": self.mapping, "pad_mapping": self.pad_mapping, "tuning": self.tuning,
-                "output_mode": self.output_mode, "profiles": self.store.catalogue(),
+                "output_mode": self.output_mode, "look": self.look, "profiles": self.store.catalogue(),
                 "armed": self.active_engine.armed}
 
     def status(self):
         age = time.monotonic() - self.last_seen
         active = self.active_engine
         return {"type": "status", "connected": self.controller is not None and age < 0.8,
-                "buttons": sorted(self.buttons), "axes": self.axes, "steering": self.steering, **self.config(),
+                "buttons": sorted(self.buttons), "axes": self.axes, "steering": self.steering,
+                "look_active": self.look_active, **self.config(),
                 "keyboard_available": self.engine.backend.available,
                 "gamepad": self.pad.backend.diagnostics(), "gamepad_report": self.pad_report(),
                 "output_ready": self.engine.backend.available if self.output_mode == "keyboard" else self.pad.backend.connected,
@@ -164,7 +171,7 @@ class Room:
             await asyncio.sleep(0.025)
             now = time.monotonic()
             if self.controller is not None and now - self.last_seen >= 0.8:
-                if self.buttons or any(self.axes.values()) or self.steering or self.active_engine.armed or self.arm_at:
+                if self.buttons or any(self.axes.values()) or self.steering or self.look_active or self.active_engine.armed or self.arm_at:
                     self.stop("Controller timed out. Inputs released; keyboard disabled.")
                 continue
             if self.arm_at and now >= self.arm_at:
@@ -361,6 +368,8 @@ def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepa
             raise HTTPException(400, "Choose keyboard or gamepad output.")
         room.stop("Output mode changed. Enable again when ready.")
         room.output_mode = data["mode"]
+        if room.output_mode == 'gamepad':
+            room.look["enabled"] = False
         room.revision += 1
         room.notify()
         return room.status()
@@ -388,6 +397,19 @@ def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepa
             raise HTTPException(400, str(exc)) from exc
         room.stop("Controller tuning changed. Enable again when ready.")
         room.tuning = profile["tuning"]
+        room.revision += 1
+        room.notify()
+        return room.status()
+
+    @app.post('/api/look')
+    async def look_settings(request: Request):
+        require_admin(request)
+        try:
+            profile = validate_profile({**room.profile_data(), 'look': await request.json()})
+        except (ValueError, TypeError) as exc:
+            raise HTTPException(400, str(exc)) from exc
+        room.stop('Camera settings changed. Enable output again when ready.')
+        room.look = profile['look']
         room.revision += 1
         room.notify()
         return room.status()
@@ -460,6 +482,13 @@ def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepa
                 profile = data.get("profile")
                 axes = data.get("axes", {})
                 disarm = data.get("disarm", False)
+                pointer = data.get("pointer", {})
+                if (not isinstance(pointer, dict) or set(pointer) - {'dx', 'dy', 'active'}
+                        or type(pointer.get('active', False)) is not bool
+                        or any(type(pointer.get(key, 0)) not in {int, float}
+                               or not math.isfinite(pointer.get(key, 0)) or abs(pointer.get(key, 0)) > 96
+                               for key in ('dx', 'dy'))):
+                    raise ValueError("Invalid camera state")
                 if (type(disarm) is not bool or type(seq) is not int or seq <= last_seq or not isinstance(buttons, list)
                         or len(buttons) > len(BUTTONS)
                         or any(type(b) is not str or b not in BUTTONS for b in buttons)
@@ -475,9 +504,11 @@ def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepa
                 if disarm:
                     room.stop("Output stopped from the phone.")
                     buttons, steering, axes = [], 0, {}
+                    pointer = {}
                 if profile is not None and profile != room.profile:
                     room.set_profile(profile)
                     buttons, steering, axes = [], 0, {}
+                    pointer = {}
                 axes = {axis: float(axes.get(axis, 0)) for axis in AXES}
                 direction = steering_direction(steering if room.layout == "racing" or steering else axes["lx"], room.steer_direction)
                 effective = set(buttons)
@@ -493,9 +524,16 @@ def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepa
                         effective.add(trigger)
                 changed = room.buttons != effective or room.steering != steering or room.axes != axes
                 room.raw_buttons, room.axes, room.vertical_direction = set(buttons), axes, vertical
+                room.look_active = bool(pointer.get('active', False) and room.look['enabled']
+                                        and room.output_mode == 'keyboard')
                 room.buttons, room.steering, room.steer_direction = effective, steering, direction
                 room.last_seen = now
                 room.apply_output()
+                # Relative deltas are consumed exactly once, never replayed by the watchdog.
+                if room.look_active:
+                    gain = room.look['sensitivity']
+                    room.engine.apply_pointer(pointer.get('dx', 0) * gain, pointer.get('dy', 0) * gain,
+                                              right=room.look['hold_right'])
                 if changed:
                     room.notify()
                 await ws.send_json({"type": "ack", "seq": seq, **room.config()})

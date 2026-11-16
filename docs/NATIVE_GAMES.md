@@ -1,36 +1,27 @@
-# From verified web racing to native games
+# Alternative compatibility targets
 
-The project owner confirmed **NONA Sprint and Jake Gordon's JavaScript Racer work on their Windows laptop with Android**. The next checks below establish native-game compatibility separately.
+SuperTuxKart and SuperTux did not run on the project owner's laptop. They are blocked targets for that machine, not verified NONA integrations, and are no longer the default next step. Do not keep reinstalling them to validate the controller.
 
-## First candidate: SuperTuxKart
+| Target | Purpose | Status |
+|---|---|---|
+| NONA Sprint | Local touch/tilt racing | Touch confirmed by owner; physical tilt is the next gate |
+| JavaScript Racer | Existing online-hosted racing | Keyboard/phone play confirmed by owner; reuse for tilt |
+| Celeste Classic | Browser platformer | Alternative candidate; published controls are arrows, X and C |
+| TrackMania Nations Forever | Native racing | Alternative candidate, untested on this laptop |
+| Roblox | Native client with many experiences | Next explicit test gate after physical motion succeeds |
 
-Official download: https://supertuxkart.net/Download
-Official requirements and input notes: https://supertuxkart.net/FAQ
+## Celeste Classic
 
-SuperTuxKart is free, provides Windows builds, and supports keyboard/gamepad input. Start with low graphics settings and its benchmark; performance depends on the laptop. The official FAQ describes a fallback renderer for older hardware. This is a candidate, not a tested NONA result or a promise of performance.
+Creator page: https://maddymakesgamesinc.itch.io/celesteclassic . Choose NONA **Celeste Classic · Keyboard**: D-pad sends arrows, A sends X, B sends C. Focus the game iframe before enabling/using input. This avoids needing another native platformer installation, but responsiveness and gameplay still need a device test.
 
-### Start with the working keyboard path
+## TrackMania Nations Forever
 
-1. Install and launch the game yourself from the official source.
-2. In its input settings, configure steering, accelerate, brake, drift/handbrake and nitro to keys you want to use.
-3. Choose NONA **Racing · Arrows** or **Racing · WASD**. Change NONA's bindings to match the game, including any extra actions.
-4. Enable output, select the game window within four seconds, and drive a short offline race. Check simultaneous steering/gas, braking and key release.
-5. Save the result as a named game profile and record the game version/settings. Loading that profile recalls its layout and bindings; output still starts disabled.
+Official publisher store: https://store.steampowered.com/app/11020/TrackMania_Nations_Forever/ . This is the free 2008 racer, not the newer Trackmania game. Its published minimum graphics requirement is DirectX 9.0c and memory requirement 256 MB; the present Steam client has its own modern OS requirements. Those old minimums are a reason to consider it, not a guarantee of launch compatibility with a current laptop.
 
-### Then try analog Xbox input
+Try offline solo play using the laptop keyboard first. If it runs, choose Racing · Arrows in NONA and match any bindings in the game's input settings. Test a short track, held gas+steering, braking, release and disconnect; then save the result. Add tilt only after ordinary controls work.
 
-Complete GAMEPAD_SETUP.md and verify real controller detection first. Choose **Racing · Xbox analog** and connect the virtual device before starting the game. In the game's input settings, bind the left stick, triggers and action buttons to the corresponding actions. Some games expect acceleration on a button rather than RT; edit NONA's Xbox bindings or configure the game accordingly. Do not infer support from the gamepad tester alone.
+## Roblox
 
-## Second candidate: SuperTux
+See ROBLOX_TEST.md. Current system requirements and experience-specific controller support must both be satisfied. Begin with a simple experience at low graphics, not an expensive or demanding game. Record the actual tested experience.
 
-Official download: https://www.supertux.org/download
-
-The official project provides Windows builds and controller support. Use **Platformer · Keyboard** and match the game's actual move/jump/action keys first. For controller input, choose **Universal · Xbox dual sticks** and configure its game bindings. This exercises a different game genre, without assuming that every racing profile fits a platformer.
-
-## Record each result
-
-For each tested game note: title/version, laptop CPU/GPU/RAM, Windows version, keyboard vs Xbox mode, saved NONA profile, game-side bindings, graphics settings, simultaneous controls, release/disconnect behavior, and whether a full round was playable.
-
-Profile export contains the mappings and tuning, not the game or driver. It executes no commands and installs nothing. Prefer offline/free-play testing while establishing compatibility. Online hosting, online multiplayer and cross-play remain properties of the game.
-
-Mouse-only games, games rejecting generated input, unsupported console/mobile-only titles, anti-cheat restrictions, and hardware requirements are outside what an input profile can solve. NONA does not bypass those boundaries.
+For every native test, note CPU/GPU/RAM, Windows version, game/client version, output mode, mappings, graphics settings, successful tasks, and failures. This iteration offers alternatives; it does not claim either native candidate runs on the owner's hardware.

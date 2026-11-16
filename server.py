@@ -20,6 +20,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from windows_input import InputEngine, SCAN_CODES
 from controller_profiles import ACTIONS, AXES, PAD_TARGETS, PROFILES, ProfileStore, mapping_valid, validate_profile
 from virtual_gamepad import GamepadEngine, build_report, neutral_report
+from local_tls import tls_folder, certificate_info
 
 ROOT = Path(__file__).resolve().parent
 BUTTONS = ACTIONS
@@ -50,8 +51,11 @@ def local_addresses():
 
 
 class Room:
-    def __init__(self, port, engine=None, addresses=None, profile_path=None, gamepad_backend=None):
+    def __init__(self, port, engine=None, addresses=None, profile_path=None, gamepad_backend=None, scheme='http', tls_dir=None):
         self.port = port
+        self.scheme = scheme
+        self.tls_dir = Path(tls_dir) if tls_dir else tls_folder()
+        self.tls_info = certificate_info(self.tls_dir)
         self.addresses = addresses or local_addresses()
         self.token = secrets.token_urlsafe(24)
         self.admin = secrets.token_urlsafe(24)
@@ -87,7 +91,7 @@ class Room:
 
     def urls(self):
         ips = sorted(a for a in self.addresses if a not in {"localhost", "127.0.0.1"})
-        return [f"http://{a}:{self.port}/controller#{self.token}" for a in ips]
+        return [f"{self.scheme}://{a}:{self.port}/controller#{self.token}" for a in ips]
 
     def stop(self, note):
         self.buttons.clear()
@@ -152,7 +156,8 @@ class Room:
                 "gamepad": self.pad.backend.diagnostics(), "gamepad_report": self.pad_report(),
                 "output_ready": self.engine.backend.available if self.output_mode == "keyboard" else self.pad.backend.connected,
                 "countdown": max(0, self.arm_at - time.monotonic()), "target": active.target_title,
-                "note": self.note, "error": active.error, "profile_error": self.store.error}
+                "note": self.note, "error": active.error, "profile_error": self.store.error,
+                "transport": self.scheme, "motion_https": self.tls_info}
 
     async def watchdog(self):
         while True:
@@ -172,8 +177,8 @@ class Room:
             self.apply_output()
 
 
-def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepad_backend=None):
-    room = Room(port, engine, addresses, profile_path, gamepad_backend)
+def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepad_backend=None, scheme='http', tls_dir=None):
+    room = Room(port, engine, addresses, profile_path, gamepad_backend, scheme, tls_dir)
 
     @asynccontextmanager
     async def lifespan(app):
@@ -207,7 +212,7 @@ def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepa
 
     def require_local(request):
         if not local_client(request):
-            raise HTTPException(403, "Open the laptop dashboard at http://localhost:8765.")
+            raise HTTPException(403, f"Open the laptop dashboard at {room.scheme}://localhost:{room.port}.")
 
     def require_admin(request):
         require_local(request)
@@ -254,6 +259,13 @@ def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepa
     async def session(request: Request):
         require_local(request)
         return {"urls": room.urls(), "admin": room.admin, "key_options": sorted(SCAN_CODES), "pad_options": sorted(PAD_TARGETS), **room.status()}
+
+    @app.get('/motion-ca.crt')
+    async def public_motion_ca():
+        path = room.tls_dir / 'NONA-local-CA.crt'
+        if not room.tls_info.get('prepared') or not path.is_file():
+            raise HTTPException(404, 'Prepare local HTTPS first. See docs/MOTION_TEST.md.')
+        return FileResponse(path, media_type='application/x-x509-ca-cert', filename='NONA-local-CA.crt')
 
     @app.get("/api/qr")
     async def qr(request: Request, index: int = 0):

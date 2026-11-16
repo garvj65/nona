@@ -1,5 +1,11 @@
 # NONA roadmap
 
+The accepted ordered release gates now live in [V1_PLAN.md](V1_PLAN.md): physical motion, then Roblox, then refinement/review/security and PC+Android packaging. The PS5 phone-controller bridge is separate and later.
+
+## 0.4 motion prototype
+
+Implemented calibrated orientation-aware tilt, touch fallback, sensor-loss release, optional local HTTPS setup, Roblox starter profiles and replacement game candidates. Real Android sensor and Roblox gameplay checks remain required.
+
 ## 0.3: adaptive profiles and optional Xbox output
 
 Implemented: persistent named profiles, import/export, dual sticks and trigger sliders, keyboard/Xbox output selection, optional vgamepad backend, tuning, OS-controller diagnostics and an emergency stop. Complete GAMEPAD_SETUP.md and the native-game acceptance checks before marking physical gamepad gameplay verified.

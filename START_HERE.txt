@@ -1,4 +1,4 @@
-NONA 0.3 — YOUR PHONE, NOW A RACING CONTROLLER
+NONA 0.4 — YOUR PHONE, NOW A RACING CONTROLLER
 
 1. Extract the entire download. Close the old PocketPad terminal if it is running.
 2. Install Python 3.10+ if needed: https://www.python.org/downloads/windows/
@@ -38,3 +38,14 @@ For native games, first try the existing keyboard output.
 Xbox output is optional: read docs/GAMEPAD_SETUP.md before its separate setup.
 Normal setup does not install the retired ViGEmBus driver.
 See docs/NATIVE_GAMES.md for the first native racing/platformer candidates.
+
+PHONE TILT STEERING
+Read docs/MOTION_TEST.md first. Phone sensors need trusted HTTPS.
+PREPARE_MOTION_HTTPS.bat creates certificates but does not install trust.
+After completing the guide's manual Windows/Android trust steps, use
+START_MOTION_WINDOWS.bat, pair again, choose Racing, Enable tilt and Calibrate.
+Test NONA Sprint and the working JavaScript Racer before Roblox.
+
+NEXT GATES
+Physical motion -> Roblox test -> refine/review/security -> package PC/Android v1.
+The phone-as-DualSense PS5 bridge is a separate later version using a real PS5.

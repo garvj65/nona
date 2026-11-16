@@ -75,6 +75,12 @@ def templates():
                                "layout": "dualstick", "output_mode": "gamepad"}
     result["platformer"] = {**copy.deepcopy(result["arrows"]), "name": "Platformer · Keyboard",
                             "mapping": {**PROFILES["arrows"], "x": "ctrl", "y": "shift", "lb": "q", "rb": "e"}}
+    result['celeste_classic'] = {**copy.deepcopy(result['arrows']), 'name': 'Celeste Classic · Keyboard',
+                                 'mapping': {**PROFILES['arrows'], 'a': 'x', 'b': 'c', 'start': 'enter', 'select': 'esc'}}
+    result['roblox_keyboard'] = {**copy.deepcopy(result['wasd']), 'name': 'Roblox · Keyboard starter',
+                                'mapping': {**PROFILES['wasd'], 'a': 'space', 'b': 'shift', 'x': 'e', 'y': 'q',
+                                            'start': 'esc', 'select': 'tab'}}
+    result['roblox_gamepad'] = {**copy.deepcopy(result['xbox_standard']), 'name': 'Roblox · Xbox candidate'}
     return result
 
 

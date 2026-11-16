@@ -35,3 +35,6 @@ The companion currently injects keys only on Windows. The built-in demos can run
 ## Record a real compatibility result
 
 For each game note: game/version or URL, laptop CPU/GPU/RAM, Windows/browser version, chosen preset and overrides, whether press/hold/release works, whether steering plus gas works, performance settings, and connection/focus behavior. Mark it verified only after playing it. This is the evidence to collect before promising broad support.
+
+
+Owner update: SuperTuxKart and SuperTux do not run on this laptop and are blocked test targets. Use the alternatives in NATIVE_GAMES.md. Motion and Roblox are staged in MOTION_TEST.md and ROBLOX_TEST.md.

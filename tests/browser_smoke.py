@@ -66,6 +66,42 @@ def main():
             game.wait_for_function('() => remoteSteering===0 && remote.size===0')
             phone.locator('[data-button=start]').tap(); game.wait_for_function('() => race.paused')
             phone.locator('[data-button=start]').tap(); game.wait_for_function('() => !race.paused')
+            # Simulated device sensor events exercise the real UI without claiming
+            # that a physical Android sensor has been tested by CI.
+            phone.locator('#enable-motion').click()
+            phone.evaluate('''() => {
+              window.__motionTestRoll=0;
+              window.__motionTestTimer=setInterval(()=>{
+                const r=window.__motionTestRoll*Math.PI/180,s=(screen.orientation?.angle||0)*Math.PI/180;
+                const x=.8*Math.sin(r),y=.8*Math.cos(r),gx=x*Math.cos(s)-y*Math.sin(s),gy=x*Math.sin(s)+y*Math.cos(s);
+                const beta=Math.asin(gy),gamma=Math.asin(-gx/Math.cos(beta));
+                window.dispatchEvent(new DeviceOrientationEvent('deviceorientation',{beta:beta*180/Math.PI,gamma:gamma*180/Math.PI,alpha:0}));
+              },30);
+            }''')
+            phone.wait_for_function('() => !document.getElementById("calibrate-motion").disabled')
+            phone.locator('#calibrate-motion').click()
+            phone.evaluate('() => window.__motionTestRoll=20')
+            game.wait_for_function('() => remoteSteering>.2')
+            points=[point('#racing-controls [data-button=a]',9)]
+            cdp.send('Input.dispatchTouchEvent', {'type':'touchStart','touchPoints':points})
+            game.wait_for_function("() => remote.has('a') && remoteSteering>.2")
+            phone.screenshot(path=str(artifacts/'tilt-active.png'),full_page=True)
+            phone.evaluate('() => clearInterval(window.__motionTestTimer)')
+            phone.wait_for_function('() => document.getElementById("motion-status").textContent.includes("sensor stopped")')
+            game.wait_for_function('() => remoteSteering===0 && remote.size===0')
+            cdp.send('Input.dispatchTouchEvent', {'type':'touchEnd','touchPoints':[]})
+            phone.evaluate('''() => Object.defineProperty(DeviceOrientationEvent,'requestPermission',{
+              configurable:true,value:async()=> 'denied'
+            })''')
+            phone.locator('#enable-motion').click()
+            phone.wait_for_function('() => document.getElementById("motion-status").textContent.includes("not granted")')
+            phone.evaluate("() => delete DeviceOrientationEvent.requestPermission")
+            phone.locator('#disable-motion').click()
+            points=[point('#wheel',1,35),point('#racing-controls [data-button=a]',2)]
+            cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':points})
+            game.wait_for_function("() => remote.has('a') && remoteSteering>.2")
+            cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
+            game.wait_for_function('() => remoteSteering===0 && remote.size===0')
             phone.set_viewport_size({'width': 851, 'height': 393})
             phone.wait_for_timeout(150)
             assert phone.evaluate('document.documentElement.scrollWidth<=innerWidth')
@@ -118,7 +154,9 @@ def main():
                               'android_emulated_multi_touch_racing': 'passed', 'wheel_centring': 'passed',
                               'short_tap_pause_resume': 'passed', 'portrait_landscape_overflow': 'passed',
                               'custom_mapping': 'passed', 'saved_profile_sync': 'passed', 'dual_sticks': 'passed',
-                              'controller_diagnostics': 'passed', 'disconnect_pause': 'passed', 'page_errors': errors}))
+                              'controller_diagnostics': 'passed', 'simulated_tilt': 'passed',
+                              'sensor_loss_releases_gas_and_steering': 'passed', 'motion_permission_denial': 'passed',
+                              'disconnect_pause': 'passed', 'page_errors': errors}))
             android.close(); desktop.close(); browser.close()
     finally:
         service.should_exit = True; thread.join(timeout=5); sock.close()

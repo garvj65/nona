@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 artifacts/
 .pytest_cache/
+*.pem
+*.key
+NONA-local-CA.crt

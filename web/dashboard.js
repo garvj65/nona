@@ -12,6 +12,8 @@ function editor(container,mapping,options){
 }
 function showError(text=''){$('error').textContent=text;$('error').classList.toggle('hidden',!text);}
 function display(status){
+  $('https-status').textContent=status.transport==='https'?'HTTPS running. The phone still needs to trust its certificate.':'HTTP running. Touch controls work; use the HTTPS launcher for phone motion.';
+  $('ca-fingerprint').textContent=status.motion_https.prepared?`Public CA SHA-256: ${status.motion_https.sha256}`:'Local motion certificate not prepared yet.';
   $('connection').classList.toggle('connected',status.connected);$('connection-text').textContent=status.connected?'Phone connected':'Waiting for phone';
   const signature=JSON.stringify(status.profiles);
   if(catalogue!==signature){catalogue=signature;$('profile').replaceChildren(...status.profiles.map(profile=>{const option=document.createElement('option');option.value=profile.id;option.textContent=profile.name;return option;}));}

@@ -9,6 +9,8 @@ if (fromHash) history.replaceState(null, '', location.pathname);
 let socket = null, seq = 0, retry = null, backoff = 1200, wakeLock = null, stopped = false;
 let steering = 0, wheelPointer = null, lastWheelSend = 0, profile = null, revision = null, catalogue = "";
 const axes = {lx:0,ly:0,rx:0,ry:0,lt:0,rt:0};
+const tilt=new NonaMotion.TiltSteering();
+let motionStarted=0,motionLastSend=0,motionNote='Touch steering selected.';
 const sticks = new Map();
 const pointers = new Map(), pending = new Map();
 const wsScheme = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -25,7 +27,7 @@ function send(extra = {}) {
   if (pending.size > 40) pending.delete(pending.keys().next().value);
   socket.send(JSON.stringify(packet));
 }
-function clearInputs() { pointers.clear(); steering = 0; wheelPointer = null; sticks.clear(); for(const key of Object.keys(axes)) axes[key]=0; document.querySelectorAll('[data-trigger]').forEach(el=>el.value='0'); for(const id of ['left-stick','right-stick']) $(id).querySelector('.stick-thumb').style.transform='translate(0px, 0px)'; render(); }
+function clearInputs() { stopMotion(); pointers.clear(); steering = 0; wheelPointer = null; sticks.clear(); for(const key of Object.keys(axes)) axes[key]=0; document.querySelectorAll('[data-trigger]').forEach(el=>el.value='0'); for(const id of ['left-stick','right-stick']) $(id).querySelector('.stick-thumb').style.transform='translate(0px, 0px)'; render(); }
 function release() { clearInputs(); send(); }
 function configure(config) {
   if (!config.profile) return;
@@ -41,6 +43,8 @@ function configure(config) {
     $('racing-controls').classList.toggle('hidden', !racing);
     $('dualstick-controls').classList.toggle('hidden', !dual);
     $('shoulders').classList.toggle('hidden', racing);
+    $('motion-panel').classList.toggle('hidden', !racing);
+    $('controller-help').textContent=racing?'Choose touch or tilt steering. Gas and Brake stay under your thumbs.':'Use both thumbs for simultaneous controls. Load a saved game profile to recall its bindings.';
   }
   const mapping=config.output_mode==='gamepad'?config.pad_mapping:config.mapping;
   document.querySelectorAll('[data-button]').forEach(el=>{const hint=el.querySelector('span');if(hint)hint.textContent=mapping[el.dataset.button]||'Unmapped';});
@@ -67,7 +71,7 @@ function connect() {
   const current = new WebSocket(`${wsScheme}://${location.host}/ws/controller?token=${encodeURIComponent(token)}`); socket = current;
   current.onopen = () => {
     if (socket !== current) return;
-    state(true, 'Connected'); $('message').textContent = 'Ready. Choose Racing for the wheel and pedals. Keep this page open.';
+    state(true, 'Connected'); $('message').textContent = 'Ready. Select the game profile you want and keep this page visible.';
     backoff = 1200; send(); awake();
   };
   current.onmessage = event => {
@@ -114,7 +118,7 @@ function moveWheel(event, force = false) {
   if (force || performance.now() - lastWheelSend > 25) { lastWheelSend = performance.now(); send(); }
 }
 wheel.addEventListener('pointerdown', event => {
-  if (socket?.readyState !== WebSocket.OPEN || wheelPointer !== null) return;
+  if (socket?.readyState !== WebSocket.OPEN || wheelPointer !== null || tilt.enabled) return;
   event.preventDefault(); wheelPointer = event.pointerId; wheel.setPointerCapture(event.pointerId); moveWheel(event, true); awake();
 });
 wheel.addEventListener('pointermove', event => { if (wheelPointer === event.pointerId) moveWheel(event); });
@@ -145,6 +149,55 @@ document.querySelectorAll('[data-trigger]').forEach(el=>{
   el.addEventListener('input',()=>{axes[el.dataset.trigger]=Number(el.value);send();});
   for(const type of ['pointerup','pointercancel','blur','keyup'])el.addEventListener(type,()=>{axes[el.dataset.trigger]=0;el.value='0';send();});
 });
+function screenAngle(){return Number(screen.orientation?.angle ?? window.orientation ?? 0);}
+function motionUI(){
+  document.body.classList.toggle('motion-active',tilt.enabled);
+  $('enable-motion').disabled=tilt.enabled;
+  $('calibrate-motion').disabled=!tilt.enabled||tilt.angle===null;
+  $('motion-status').textContent=motionNote;
+}
+function stopMotion(note='Touch steering selected.'){
+  window.removeEventListener('deviceorientation',onMotion);
+  tilt.stop();motionNote=note;motionUI();
+}
+function motionFault(note){release();motionNote=note;motionUI();send({disarm:true});}
+function onMotion(event){
+  if(!tilt.enabled)return;
+  const wasCalibrated=tilt.calibrated;
+  const result=tilt.sample(event.beta,event.gamma,screenAngle(),performance.now());
+  if(wasCalibrated&&!tilt.calibrated){motionFault('Motion changed or became unstable. Hold the phone upright, enable tilt, then recalibrate.');return;}
+  steering=result.value;render();
+  motionNote=result.state==='hold-upright'?'Hold the screen more upright, facing you.':result.state==='calibrate'?'Hold your neutral position and tap Calibrate.':`Tilt active · ${result.offset.toFixed(1)}° · steering ${Math.round(steering*100)}%`;
+  motionUI();
+  if(performance.now()-motionLastSend>25){motionLastSend=performance.now();send();}
+}
+$('enable-motion').onclick=async()=>{
+  release();send({disarm:true});
+  if(!window.isSecureContext){motionNote='Tilt needs trusted HTTPS on the phone. Open the setup instructions below.';motionUI();return;}
+  if(!window.DeviceOrientationEvent){motionNote='This browser does not expose orientation sensors. Touch controls remain available.';motionUI();return;}
+  try{
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      const permission=await DeviceOrientationEvent.requestPermission();
+      if(permission!=='granted')throw new Error('Motion permission was not granted. Use touch or enable sensor access in browser settings.');
+    }
+    tilt.enable();motionStarted=performance.now();motionNote='Waiting for a sensor reading…';motionUI();
+    window.addEventListener('deviceorientation',onMotion);awake();
+  }catch(error){motionNote=error.message;motionUI();}
+};
+$('calibrate-motion').onclick=()=>{
+  if(!tilt.calibrate())return;
+  pointers.clear();for(const key of Object.keys(axes))axes[key]=0;
+  steering=0;render();send({disarm:true});
+  motionNote='Calibrated. Tilt to steer. Re-enable laptop output for an external game.';motionUI();
+};
+$('disable-motion').onclick=()=>{release();send({disarm:true});};
+$('invert-motion').onchange=()=>{tilt.invert=$('invert-motion').checked;steering=0;tilt.filtered=0;send();};
+$('motion-range').onchange=()=>{tilt.range=Number($('motion-range').value);tilt.filtered=0;steering=0;send();};
+setInterval(()=>{
+  if(!tilt.enabled)return;
+  if(tilt.stale(performance.now()))motionFault('Motion sensor stopped. Inputs released; use touch or enable tilt again.');
+  else if(tilt.lastSample===null&&performance.now()-motionStarted>4000)motionFault('No usable sensor readings. Check sensor support, permission, and how you hold the phone.');
+},100);
 $('controller-profile').onchange = () => { release(); send({ profile: $('controller-profile').value }); };
 setInterval(() => { if (!document.hidden) send(); }, 100);
 document.addEventListener('visibilitychange', () => {

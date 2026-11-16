@@ -4,7 +4,15 @@
 
 NONA turns an Android phone into a Wi-Fi controller for a Windows laptop. Open the controller in your phone browser, pair with a QR code, and play. The laptop runs the game; the phone supplies the controls.
 
-Version **0.3** adds saved game profiles, a dual-stick phone layout, and optional Xbox 360/XInput output for native games. The working racing and keyboard paths remain available. [How profiles adapt to games](docs/ADAPTIVE_PROFILES.md) · [Optional Xbox setup](docs/GAMEPAD_SETUP.md) · [Native-game test guide](docs/NATIVE_GAMES.md)
+Version **0.4** adds calibrated phone tilt steering and an optional trusted local HTTPS setup. Saved game profiles, dual sticks and optional Xbox output remain available. The working racing and keyboard paths remain available. [How profiles adapt to games](docs/ADAPTIVE_PROFILES.md) · [Optional Xbox setup](docs/GAMEPAD_SETUP.md) · [Native-game test guide](docs/NATIVE_GAMES.md)
+
+## Motion test first
+
+The owner confirmed NONA Sprint and JavaScript Racer work, while SuperTuxKart and SuperTux do not run on this laptop. Reuse the working racer for motion. Read [MOTION_TEST.md](docs/MOTION_TEST.md), run PREPARE_MOTION_HTTPS.bat, complete its manual certificate-trust steps, then use START_MOTION_WINDOWS.bat. Choose Racing, Enable tilt, hold neutral and Calibrate. Gas/Brake remain touch controls.
+
+[Alternative games](docs/NATIVE_GAMES.md) · [Roblox test gate](docs/ROBLOX_TEST.md) · [PC/Android v1 and later PS5 direction](docs/V1_PLAN.md)
+
+This is a pre-v1 motion prototype. Physical motion and Roblox gameplay must pass before the requested review, security checks and application packaging. The PS5 controller bridge remains a separate later version.
 
 ## Start on Windows
 
@@ -64,7 +72,7 @@ To verify the bridge independently, select Racing · WASD, open Notepad, enable 
 
 An online-hosted game is different from online multiplayer. NONA changes your input device; the game controls multiplayer, cross-play, account access, hardware requirements, and whether it accepts generated input. See [the compatibility guide](docs/COMPATIBILITY.md).
 
-## Adaptive controller in 0.3
+## Adaptive controller
 
 Choose a layout and output mode that match the game, customize its bindings, then save a named profile. Profiles persist across restarts and can be imported/exported as JSON. The app synchronizes the selected profile to the phone. It does not automatically read arbitrary games’ control settings.
 
@@ -81,7 +89,7 @@ Dual-stick mode provides both analog sticks, A/B/X/Y, shoulder buttons and sprin
 - Shared protocol for future Android clients; old button-only starter packets remain accepted.
 - Key release on normal disconnect, timeout, focus change, mapping changes and normal shutdown.
 
-There is no motion-sensor steering, Android APK, Bluetooth HID, mouse-only output, game streaming, internet relay, or multiple-controller multiplayer in this version. Xbox output is optional and requires its separate adapter/driver setup. These are separate milestones in [the roadmap](docs/ROADMAP.md).
+There is no Android APK, Bluetooth HID, mouse-only output, game streaming, internet relay, or multiple-controller multiplayer in this version. Xbox output is optional and requires its separate adapter/driver setup. These are separate milestones in [the roadmap](docs/ROADMAP.md).
 
 ## Project map
 
@@ -91,7 +99,9 @@ There is no motion-sensor steering, Android APK, Bluetooth HID, mouse-only outpu
 | `windows_input.py` | Windows SendInput adapter and injected-key ownership |
 | `virtual_gamepad.py` | Optional Xbox backend, normalized reports and neutralization |
 | `controller_profiles.py` | Validated templates, saved profiles and atomic persistence |
-| `web/controller.js` | Multi-touch buttons, wheel, reconnect and profile synchronization |
+| `web/controller.js` | Touch/motion UI, reconnect and profile synchronization |
+| `web/motion.js` | Orientation mapping, calibration, dead zone and smoothing |
+| `local_tls.py` | Optional local HTTPS certificates, without installing trust |
 | `web/dashboard.js` | Pairing, presets, mapping editor and keyboard arming |
 | `web/race-physics.js` | Pure racing simulation, checkpoints, laps and boost |
 | `web/race.js` | Canvas rendering and direct controller integration |
@@ -115,7 +125,7 @@ For another port: `python run.py --port 8766`. Protocol and input lifecycle chec
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-With Node 22+ available: `node --test tests/race.test.cjs`.
+With Node 22+ available: `node --test tests/race.test.cjs tests/motion.test.cjs`.
 
 Optional rendered Android-emulation browser check:
 

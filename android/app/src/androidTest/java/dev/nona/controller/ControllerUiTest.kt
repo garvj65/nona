@@ -1,7 +1,9 @@
 package dev.nona.controller
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.os.SystemClock
 import android.view.MotionEvent
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
@@ -25,6 +27,8 @@ class ControllerUiTest {
     @After fun clearPreview(){LinkFactory.previewForTests=false}
     private fun screenshot(name:String){
         val instrumentation=InstrumentationRegistry.getInstrumentation()
+        instrumentation.waitForIdleSync()
+        instrumentation.uiAutomation.waitForIdle(500,5000)
         val folder=File(instrumentation.targetContext.getExternalFilesDir(null),"ui").apply{mkdirs()}
         val bitmap=instrumentation.uiAutomation.takeScreenshot()
         try { File(folder,"$name.png").outputStream().use{bitmap.compress(Bitmap.CompressFormat.PNG,100,it)} }
@@ -37,6 +41,19 @@ class ControllerUiTest {
             screenshot("android-pairing")
             onView(withContentDescription("Connect to Windows laptop")).perform(click())
             onView(withId(R.id.open_controller)).check(matches(isDisplayed())).perform(click())
+            // Rotation is asynchronous. Wait for the new view geometry before playing
+            // and capturing the display, rather than recording the transition snapshot.
+            val deadline=SystemClock.uptimeMillis()+5000
+            var landscape=false
+            while(!landscape && SystemClock.uptimeMillis()<deadline){
+                scenario.onActivity{activity->
+                    val view=activity.findViewById<ControllerSurface>(R.id.controller_surface)
+                    landscape=activity.resources.configuration.orientation==Configuration.ORIENTATION_LANDSCAPE && view.width>view.height && view.width>0
+                }
+                if(!landscape)SystemClock.sleep(50)
+            }
+            assertTrue("Controller must settle into landscape before input",landscape)
+            InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500,5000)
             onView(withId(R.id.play_stop)).check(matches(withText("Play"))).perform(click())
             onView(withId(R.id.play_stop)).check(matches(withText("Stop")))
             scenario.onActivity{activity->

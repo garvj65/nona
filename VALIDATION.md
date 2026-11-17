@@ -1,6 +1,16 @@
-# Validation — NONA mobile-controls prototype 0.5
+# Validation — NONA Android Bluetooth preview 0.6
 
-Recorded: 2026-11-16.
+Updated: 2026-11-17. Physical Wi-Fi results were reported on 2026-11-16.
+
+## Android preview evidence
+
+The native Android keyboard/mouse app now builds as an APK. [Android Actions run 44051171819](https://github.com/garvj65/nona/actions/runs/44051171819) passed 11 JVM tests, Android lint, debug/release compilation and an Android 35 emulator UI test. The UI test verifies the device-selection flow, Play/Stop, keyboard reports, background neutralization and paused resume. Its debug-only in-process link sends no Bluetooth or OS input. It cannot establish physical radio compatibility, Windows pairing success, game feel or real sensor latency.
+
+The report/session tests cover descriptor lengths, report bounds, neutral startup, simultaneous input, consumed-once mouse deltas, GET_REPORT state without relative replay, short taps, pause/reconnect behavior and gyro math. The native app requests Bluetooth permissions but no internet/location permission; it requires a selected bonded host and a separate Play action. Callback ordering and permission/lifecycle cleanup were reviewed during implementation. This is not a completed independent security audit.
+
+The redesigned Wi-Fi dashboard and phone controls passed the existing [NONA checks run 44051171867](https://github.com/garvj65/nona/actions/runs/44051171867), including Python/Node tests and Android-emulated Chromium. Dashboard screenshots were also captured at desktop and compact widths, with no horizontal overflow.
+
+Follow [docs/ANDROID_BLUETOOTH.md](docs/ANDROID_BLUETOOTH.md) to install the test APK and record physical Bluetooth acceptance. The native racing profile currently uses keyboard steering; calibrated position-based racing tilt remains available in the existing Wi-Fi controller. Native gyro assistance applies to Move & look.
 
 ## Device evidence
 
@@ -19,7 +29,7 @@ On 2026-11-16 the owner reported that physical phone tilt works in both NONA Spr
 
 These are owner-reported physical results, separate from automated tests. They establish working racing tilt and partial Roblox keyboard compatibility on this setup, not completion of every acceptance check or compatibility with other devices. SuperTuxKart and SuperTux do not run on this laptop and remain blocked targets. Smooth Roblox movement/camera, full lifecycle checks and the eventual packaged v1 remain acceptance gates.
 
-## Passed locally
+## Existing Wi-Fi automated coverage
 
 - **54 Python tests:** existing protocol/profile/output lifecycle and TLS coverage plus mouse ABI/relative moves, held right-button cleanup/retry, focused output, pointer validation/bounds, no replay, concurrent move/look/jump, profile compatibility and host-only camera settings. Real HTTPS/WSS tests validate certificates: an untrusted client is rejected; a client trusting the generated CA connects.
 - **23 Node tests:** 9 racing simulation tests, 8 racing motion tests and 6 mobile-input tests covering floating touch origins, bounded radial input, gyro clutch, screen-space axes, invalid readings, deadband, frame gaps and staleness.
@@ -36,4 +46,4 @@ These are generated sensor events, not readings from real Android hardware. Loop
 
 Follow docs/MOTION_TEST.md and docs/MOBILE_CONTROLS.md to finish the new mouse/right-button release, screen-lock, disconnect/reconnect, rotation and touch-fallback checks. Record the exact phone/browser and laptop specifications. Complete docs/ROBLOX_TEST.md in a real experience and compare against laptop keyboard/mouse performance. The new swipe/gyro output needs physical acceptance independently of prior tilt gameplay.
 
-The user requested refinement, validation, review, security checks and packaging after motion and Roblox succeed. Those gates are captured in docs/V1_PLAN.md. This iteration is not a completed security audit or a v1 APK/Windows bundle. The later phone-as-DualSense PS5 bridge is not implemented here.
+The user requested refinement, validation, review, security checks and packaging after motion and Roblox succeed. Those gates are captured in docs/V1_PLAN.md. This iteration is not a completed security audit or a production v1 Android/Windows bundle. The later phone-as-DualSense PS5 bridge is not implemented here.

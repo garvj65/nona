@@ -98,8 +98,13 @@ class BluetoothLink(private val context: Context) : ControllerLink {
             if (!current()) return
             if (!registered) { connected = null; update(LinkStatus("disconnected", message = "Bluetooth input paused. Keep NONA open and set up Bluetooth again.")); return }
             val peer = connected
-            if(peer != null && peer.address == selected?.address) {
-                try { update(LinkStatus("connected", true, host(peer), "Connected. Open the controller when you're ready.")) }
+            if (peer != null && peer.address == selected?.address) {
+                try {
+                    keyboard = HidReports.keyboard(); mouse = HidReports.mouse()
+                    hid.sendReport(peer, HidReports.KEYBOARD, keyboard)
+                    hid.sendReport(peer, HidReports.MOUSE, mouse)
+                    update(LinkStatus("connected", true, host(peer), "Connected. Open the controller when you're ready."))
+                }
                 catch (_: SecurityException) { permissionLost() }
             } else update(LinkStatus("registered", registered = true, message = "Choose a paired computer, or pair a new one."))
         }
@@ -114,22 +119,26 @@ class BluetoothLink(private val context: Context) : ControllerLink {
                 when (state) {
                     BluetoothProfile.STATE_CONNECTED -> {
                         connected = device; keyboard = HidReports.keyboard(); mouse = HidReports.mouse()
-                        hid.sendReport(device, HidReports.KEYBOARD, keyboard)
-                        hid.sendReport(device, HidReports.MOUSE, mouse)
+                        val registered = status.registered
+                        if (registered) {
+                            hid.sendReport(device, HidReports.KEYBOARD, keyboard)
+                            hid.sendReport(device, HidReports.MOUSE, mouse)
+                        }
                         preferences.edit().putString("address", device.address).apply()
-                        update(LinkStatus("connected", true, host(device), "Connected. Open the controller when you're ready."))
+                        update(if (registered) LinkStatus("connected", true, host(device), "Connected. Open the controller when you're ready.")
+                            else LinkStatus("preparing", message = "Waiting for Bluetooth input registration…"))
                     }
-                    BluetoothProfile.STATE_CONNECTING -> update(LinkStatus("connecting", true, message = "Connecting to ${host(device).name}…"))
+                    BluetoothProfile.STATE_CONNECTING -> update(LinkStatus("connecting", status.registered, message = "Connecting to ${host(device).name}…"))
                     BluetoothProfile.STATE_DISCONNECTED -> {
                         connected = null
-                        update(LinkStatus("registered", true, message = "Computer disconnected. Select it to reconnect."))
+                        update(LinkStatus(if (status.registered) "registered" else "idle", status.registered, message = "Computer disconnected. Select it to reconnect."))
                     }
                 }
             } catch (_: SecurityException) { permissionLost() }
         }
 
         override fun onGetReport(device: BluetoothDevice, type: Byte, id: Byte, bufferSize: Int) {
-            if (!current() || device.address != connected?.address) return
+            if (!current() || !status.registered || device.address != connected?.address) return
             try {
                 val report = when (id.toInt()) { HidReports.KEYBOARD -> keyboard; HidReports.MOUSE -> mouse; else -> null }
                 if (type != BluetoothHidDevice.REPORT_TYPE_INPUT || report == null)
@@ -141,7 +150,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
         }
 
         override fun onSetReport(device: BluetoothDevice, type: Byte, id: Byte, data: ByteArray) {
-            if (!current() || device.address != connected?.address) return
+            if (!current() || !status.registered || device.address != connected?.address) return
             try {
                 hid.reportError(device, if (type == BluetoothHidDevice.REPORT_TYPE_OUTPUT && id.toInt() == 1 && data.size == 1)
                     BluetoothHidDevice.ERROR_RSP_SUCCESS else BluetoothHidDevice.ERROR_RSP_INVALID_PARAM)
@@ -149,7 +158,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
         }
 
         override fun onSetProtocol(device: BluetoothDevice, protocol: Byte) {
-            if (!current() || device.address != connected?.address || protocol == BluetoothHidDevice.PROTOCOL_REPORT_MODE) return
+            if (!current() || !status.registered || device.address != connected?.address || protocol == BluetoothHidDevice.PROTOCOL_REPORT_MODE) return
             disconnect()
             update(LinkStatus("error", true, message = "This computer requested an unsupported input mode. Reconnect or use the Wi-Fi controller."))
         }
@@ -157,7 +166,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
         override fun onVirtualCableUnplug(device: BluetoothDevice) {
             if (!current() || device.address != selected?.address) return
             connected = null; selected = null; preferences.edit().remove("address").apply()
-            update(LinkStatus("registered", true, message = "Computer removed the connection. Pair again to continue."))
+            update(LinkStatus(if (status.registered) "registered" else "idle", status.registered, message = "Computer removed the connection. Pair again to continue."))
         }
     }
 
@@ -181,7 +190,9 @@ class BluetoothLink(private val context: Context) : ControllerLink {
             if (proxy?.connect(peer) != true) update(LinkStatus("registered", true, message = "Connection could not start. Try pairing the computer again."))
             else timer.postDelayed({
                 if (currentAttempt == attempt && status.stage == "connecting" && !ready) {
-                    disconnect(); update(LinkStatus("registered", true, message = "Computer did not connect. Check Windows Bluetooth, then select it again."))
+                    val registered = status.registered
+                    disconnect()
+                    update(LinkStatus(if (registered) "registered" else "idle", registered, message = "Computer did not connect. Check Windows Bluetooth, then select it again."))
                 }
             }, 12000)
         } catch (_: SecurityException) { permissionLost() }

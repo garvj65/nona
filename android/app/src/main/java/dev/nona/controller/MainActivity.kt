@@ -89,9 +89,9 @@ class MainActivity : Activity(), SensorEventListener {
             if(!foreground)return
             session.flush()
             if(gyroActive()&&session.active&&SystemClock.elapsedRealtime()-lastGyro>750){gyroEnabled=false;pauseInput("Motion readings stopped. Tap Play to continue with touch.")}
-            surface?.invalidate()
+            if(session.active)surface?.invalidate()
             if(!inController){val signature=link.computers().joinToString{it.address};if(signature!=hostsSignature)renderPairing()}
-            handler.postDelayed(this,20)
+            handler.postDelayed(this,if(inController)20 else 1500)
         }
     }
 

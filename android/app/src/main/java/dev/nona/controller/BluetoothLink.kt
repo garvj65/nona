@@ -36,6 +36,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
     private var wanted = false
     private var requesting = false
     private var epoch = 0
+    private var attempt = 0
     private val timer = Handler(Looper.getMainLooper())
     private var keyboard = HidReports.keyboard()
     private var mouse = HidReports.mouse()
@@ -171,8 +172,14 @@ class BluetoothLink(private val context: Context) : ControllerLink {
         try {
             val peer = adapter.bondedDevices.firstOrNull { it.address == computer.address } ?: return
             selected = peer
+            val currentAttempt = ++attempt
             update(LinkStatus("connecting", true, message = "Connecting to ${computer.name}…"))
             if (proxy?.connect(peer) != true) update(LinkStatus("registered", true, message = "Connection could not start. Try pairing the computer again."))
+            else timer.postDelayed({
+                if (currentAttempt == attempt && status.stage == "connecting" && !ready) {
+                    disconnect(); update(LinkStatus("registered", true, message = "Computer did not connect. Check Windows Bluetooth, then select it again."))
+                }
+            }, 12000)
         } catch (_: SecurityException) { permissionLost() }
     }
 
@@ -187,6 +194,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
     }
 
     override fun disconnect() {
+        ++attempt
         send(HidReports.KEYBOARD, HidReports.keyboard()); send(HidReports.MOUSE, HidReports.mouse())
         val peer = connected ?: selected
         connected = null; selected = null
@@ -199,7 +207,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
         val service = proxy; proxy = null
         if (service != null) {
             try { if (permitted()) service.unregisterApp() } catch (_: RuntimeException) { }
-            adapter?.closeProfileProxy(BluetoothProfile.HID_DEVICE, service)
+            try { adapter?.closeProfileProxy(BluetoothProfile.HID_DEVICE, service) } catch (_: RuntimeException) { }
         }
         update(LinkStatus("idle", message = "Bluetooth input paused. Open NONA to reconnect."))
     }

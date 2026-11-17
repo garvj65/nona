@@ -138,7 +138,7 @@ class InputSession(
 
 object StickMath {
     const val STEER_DEADZONE = .12f
-    const val PULSE_PERIOD_MS = 100L
+    const val PULSE_PERIOD_MS = 120L // six 20 ms ticks per pulse
     private const val SECTOR = PI / 4
     private const val KEEP = PI / 8 + PI / 24 // 22.5° sector half-width + 7.5° hysteresis
 

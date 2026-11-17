@@ -110,8 +110,9 @@ class MainActivity : Activity(), SensorEventListener {
             if(gyroActive()&&session.active&&SystemClock.elapsedRealtime()-lastGyro>750){gyroEnabled=false;pauseInput("Motion readings stopped. Tap Play to continue with touch.")}
             if(session.active)surface?.invalidate()
             if(!inController){val signature=link.computers().joinToString{it.address};if(signature!=hostsSignature)renderPairing()}
-            // 100 Hz: smoother relative camera and 10 ms resolution for pulsed steering.
-            handler.postDelayed(this,if(inController)10 else 1500)
+            // 50 Hz. Keep this above ~15 ms: a faster repeating main-thread message never lets
+            // the UI go idle (Espresso hangs on it) and costs battery for no visible gain.
+            handler.postDelayed(this,if(inController)20 else 1500)
         }
     }
 

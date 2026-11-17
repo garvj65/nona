@@ -1,0 +1,10 @@
+<resources>
+    <item type="id" name="link_status" />
+    <item type="id" name="link_action" />
+    <item type="id" name="host_list" />
+    <item type="id" name="open_controller" />
+    <item type="id" name="play_stop" />
+    <item type="id" name="controller_surface" />
+    <item type="id" name="controller_status" />
+    <item type="id" name="back_to_devices" />
+</resources>

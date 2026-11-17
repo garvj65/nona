@@ -6,3 +6,10 @@ artifacts/
 *.pem
 *.key
 NONA-local-CA.crt
+android/.gradle/
+android/**/build/
+android/local.properties
+*.jks
+*.keystore
+*.apk
+*.aab

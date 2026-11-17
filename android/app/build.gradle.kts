@@ -1,0 +1,24 @@
+plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
+android {
+    namespace = "dev.nona.controller"
+    compileSdk = 35
+    defaultConfig {
+        applicationId = "dev.nona.controller"
+        minSdk = 28
+        targetSdk = 35
+        versionCode = 6
+        versionName = "0.6.0-preview"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+    kotlinOptions { jvmTarget = "17" }
+    buildFeatures { buildConfig = true }
+    lint { abortOnError = true; checkReleaseBuilds = true }
+}
+dependencies {
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test:core:1.6.1")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+}

@@ -6,7 +6,7 @@ import android.view.MotionEvent
 import android.view.View
 import kotlin.math.*
 
-class ControllerSurface(context: Context, private val session: InputSession) : View(context) {
+class ControllerSurface(context: Context, private val session: InputSession, private val cancelled: () -> Unit = {}) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val roles = mutableMapOf<Int, String>()
     private val points = mutableMapOf<Int, PointF>()
@@ -117,7 +117,7 @@ class ControllerSurface(context: Context, private val session: InputSession) : V
                 }
                 if(event.actionMasked==MotionEvent.ACTION_UP)performClick()
             }
-            MotionEvent.ACTION_CANCEL->{session.pause();reset()}
+            MotionEvent.ACTION_CANCEL->{session.pause();reset();cancelled()}
         }
         invalidate();return true
     }

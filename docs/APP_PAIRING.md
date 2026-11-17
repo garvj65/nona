@@ -4,6 +4,8 @@ Status: planned, not implemented. The browser prototype still uses its documente
 
 The owner accepted this pairing direction on 2026-11-17. Keep it for the Wi-Fi companion route. [BLUETOOTH_AND_DEPLOYMENT.md](BLUETOOTH_AND_DEPLOYMENT.md) explores an additional direct Bluetooth HID mode that could work without NONA software on the PC, subject to device/game tests. Ordinary Bluetooth data transport would still need a PC receiver. These are separate connection routes; direct HID uses OS Bluetooth pairing rather than this TLS/QR flow.
 
+Implementation update: the 0.6 source now contains a native Android Bluetooth keyboard/mouse preview; see ANDROID_BLUETOOTH.md for installation and acceptance tests. That does not implement the native Wi-Fi QR/trust contract below. Bluetooth radio/game compatibility remains unverified until tested on the owner's devices.
+
 ## Intended user flow
 
 1. Install/open the Windows companion and Android NONA app.

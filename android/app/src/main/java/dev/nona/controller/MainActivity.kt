@@ -151,7 +151,7 @@ class MainActivity : Activity(), SensorEventListener {
         if(!allowed()&&Build.VERSION.SDK_INT>=31){requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT),10);return}
         if(link.status.stage=="disabled"){
             systemPrompt=true
-            try{startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),20)}catch(_:ActivityNotFoundException){systemPrompt=false;Toast.makeText(this,"Turn on Bluetooth in Settings.",Toast.LENGTH_LONG).show()}
+            try{startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),20)}catch(_:RuntimeException){systemPrompt=false;Toast.makeText(this,"Allow Nearby devices and turn on Bluetooth in Settings.",Toast.LENGTH_LONG).show()}
         }else{link.stop();link.start()}
     }
     private fun pairNewComputer() {
@@ -194,7 +194,7 @@ class MainActivity : Activity(), SensorEventListener {
         toolbar.addView(button(if(session.active)"Stop" else "Play",true){if(session.active)pauseInput()else play()}.apply{id=R.id.play_stop},LinearLayout.LayoutParams(dp(90),dp(44)).apply{leftMargin=dp(8)})
         page.addView(toolbar)
         page.addView(text("",11f,Color.rgb(165,181,181)).apply{id=R.id.controller_status;setPadding(dp(18),0,dp(18),0)},LinearLayout.LayoutParams(-1,dp(25)))
-        surface=ControllerSurface(this,session)
+        surface=ControllerSurface(this,session){pauseInput("Touch interrupted. Tap Play to continue.")}
         page.addView(surface,LinearLayout.LayoutParams(-1,0,1f))
         updateController()
     }

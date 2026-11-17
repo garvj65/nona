@@ -188,7 +188,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
         val peer = connected ?: return false
         return try {
             if (proxy?.sendReport(peer, id, report) != true) false
-            else { if (id == 1) keyboard = report.copyOf() else mouse = report.copyOf(); true }
+            else { if (id == 1) keyboard = report.copyOf() else mouse = HidReports.mouseState(report); true }
         } catch (_: SecurityException) { permissionLost(); false }
         catch (_: RuntimeException) { false }
     }

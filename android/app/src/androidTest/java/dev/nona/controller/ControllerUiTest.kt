@@ -14,11 +14,15 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Before
+import org.junit.After
 import org.junit.runner.RunWith
 import java.io.File
 
 @RunWith(AndroidJUnit4::class)
 class ControllerUiTest {
+    @Before fun usePreview(){LinkFactory.previewForTests=true}
+    @After fun clearPreview(){LinkFactory.previewForTests=false}
     private fun screenshot(name:String){
         val instrumentation=InstrumentationRegistry.getInstrumentation()
         val folder=File(instrumentation.targetContext.getExternalFilesDir(null),"ui").apply{mkdirs()}
@@ -27,7 +31,7 @@ class ControllerUiTest {
         finally { bitmap.recycle() }
     }
     @Test fun nativePairPlayStopAndBackgroundAreNeutral(){
-        val intent=Intent(ApplicationProvider.getApplicationContext(),MainActivity::class.java).putExtra("nona.ui.preview",true)
+        val intent=Intent(ApplicationProvider.getApplicationContext(),MainActivity::class.java)
         ActivityScenario.launch<MainActivity>(intent).use{scenario->
             onView(withId(R.id.link_status)).check(matches(withText("Choose a paired computer, or pair a new one.")))
             screenshot("android-pairing")

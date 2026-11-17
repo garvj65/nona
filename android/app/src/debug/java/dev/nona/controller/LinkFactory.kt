@@ -3,8 +3,9 @@ package dev.nona.controller
 import android.app.Activity
 
 object LinkFactory {
+    var previewForTests = false
     fun create(activity: Activity): ControllerLink =
-        if (activity.intent.getBooleanExtra("nona.ui.preview", false)) PreviewLink() else BluetoothLink(activity)
+        if (previewForTests) PreviewLink() else BluetoothLink(activity)
 }
 
 // Instrumentation-only view preview. It never creates a Bluetooth proxy or sends OS input.

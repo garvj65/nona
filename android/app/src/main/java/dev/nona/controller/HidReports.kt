@@ -23,6 +23,10 @@ object HidReports {
         require(dx in -127..127 && dy in -127..127)
         return byteArrayOf(if (right) 2 else 0, dx.toByte(), dy.toByte(), 0)
     }
+    fun mouseState(report: ByteArray): ByteArray {
+        require(report.size == 4)
+        return byteArrayOf(report[0], 0, 0, 0) // GET_REPORT must not replay relative movement.
+    }
 }
 
 interface ReportSink {

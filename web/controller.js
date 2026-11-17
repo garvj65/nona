@@ -62,6 +62,10 @@ function configure(config) {
   }
   const mapping=config.output_mode==='gamepad'?config.pad_mapping:config.mapping;
   document.querySelectorAll('[data-button]').forEach(el=>{const hint=el.querySelector('span');if(hint)hint.textContent=mapping[el.dataset.button]||'Unmapped';});
+  if(mobileLook){
+    const labels={a:'Jump',b:'Run',x:'Use',y:'Action'};
+    document.querySelectorAll('#dualstick-controls [data-button]').forEach(el=>{const hint=el.querySelector('span');if(hint)hint.textContent=labels[el.dataset.button]||'';});
+  }
   $('bridge-status').textContent = `${config.output_mode==='gamepad'?'Xbox':'Keys'} ${config.armed?'ON':'off'}`;
 }
 

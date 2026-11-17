@@ -15,6 +15,9 @@ class InputSessionTest {
     }
     @Test(expected=IllegalArgumentException::class) fun oversizedKeyboardRejected(){HidReports.keyboard((4..10).toSet())}
     @Test(expected=IllegalArgumentException::class) fun outOfRangePointerRejected(){HidReports.mouse(128)}
+    @Test fun getReportStateNeverReplaysRelativeMouseMovement(){
+        assertArrayEquals(byteArrayOf(2,0,0,0),HidReports.mouseState(HidReports.mouse(70,-50,true)))
+    }
     @Test fun noInputBeforeStartAndNoAutomaticResume(){
         val sink=Sink();val input=InputSession(sink)
         input.move(1f,-1f);input.action("a",true);input.flush();assertTrue(sink.reports.isEmpty())

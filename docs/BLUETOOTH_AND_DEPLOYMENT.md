@@ -2,6 +2,8 @@
 
 Researched: 2026-11-17. Status: design exploration, not implemented or device-verified. NONA 0.5 remains the existing browser/Windows prototype. The owner accepted the companion QR/trust direction in APP_PAIRING.md and asked whether Bluetooth could remove both shared-Wi-Fi setup and a PC download.
 
+Implementation update: 0.6 adds the native Android direct keyboard/mouse preview and a redesigned controller desk. See ANDROID_BLUETOOTH.md. Generic gamepad, Bluetooth data-to-companion, native Wi-Fi pairing and store distribution remain proposed. No physical Bluetooth success is established by source code, an APK build or emulator tests.
+
 ## The decision Bluetooth alone does not answer
 
 There are two different architectures:

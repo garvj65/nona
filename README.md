@@ -4,7 +4,11 @@
 
 NONA turns an Android phone into a Wi-Fi controller for a Windows laptop. Open the controller in your phone browser, pair with a QR code, and play. The laptop runs the game; the phone supplies the controls.
 
-Version **0.5** adds a floating movement stick, swipe camera and optional gyro camera assistance for the next Roblox test. Racing tilt, saved game profiles, dual sticks and optional Xbox output remain available. [Mobile controls setup and test](docs/MOBILE_CONTROLS.md). [How profiles adapt to games](docs/ADAPTIVE_PROFILES.md) · [Optional Xbox setup](docs/GAMEPAD_SETUP.md) · [Native-game test guide](docs/NATIVE_GAMES.md)
+Version **0.6 preview** adds a native Android **Bluetooth keyboard/mouse** app, with a simpler pairing screen and a dedicated play surface. The Windows controller desk and browser controls have a quieter, task-focused design. The existing Wi-Fi, racing, saved-profile and optional Xbox paths remain available.
+
+**[Install and test the Android preview](docs/ANDROID_BLUETOOTH.md)** · [Android build artifacts](https://github.com/garvj65/nona/actions/workflows/android.yml) · [Wi-Fi mobile controls](docs/MOBILE_CONTROLS.md)
+
+Direct Bluetooth uses Android/Windows Bluetooth pairing and does not require the PC NONA server, shared Wi-Fi or a CA certificate. This is a test APK, not a Play Store release. Physical Vivo/Windows compatibility remains a device acceptance test; generic/Xbox HID gamepad and native Wi-Fi QR pairing are not implemented by this Android preview.
 
 ## Current device results and next test
 
@@ -12,7 +16,7 @@ The owner confirmed physical tilt works in NONA Sprint and JavaScript Racer, wit
 
 [Alternative games](docs/NATIVE_GAMES.md) · [Roblox test gate](docs/ROBLOX_TEST.md) · [PC/Android v1 and later PS5 direction](docs/V1_PLAN.md)
 
-This is a pre-v1 controls prototype. Complete the movement/camera and lifecycle device checks before native-app acceptance, release security review and packaging. [Native app pairing](docs/APP_PAIRING.md) is planned to keep trust inside NONA rather than require a device-wide test CA. The PS5 controller bridge remains a separate later version.
+This is a pre-v1 controls and Bluetooth prototype. Complete the movement/camera and lifecycle device checks before native-app acceptance, release security review and packaging. [Native app pairing](docs/APP_PAIRING.md) is planned to keep trust inside NONA rather than require a device-wide test CA. The PS5 controller bridge remains a separate later version.
 
 ## Start on Windows
 
@@ -90,7 +94,7 @@ Dual-stick mode provides both analog sticks, A/B/X/Y, shoulder buttons and sprin
 - Shared protocol for future Android clients; old button-only starter packets remain accepted.
 - Key release on normal disconnect, timeout, focus change, mapping changes and normal shutdown.
 
-There is no Android APK, Bluetooth HID, game streaming, internet relay, or multiple-controller multiplayer in this version. The new mouse/gyro path is implemented and needs physical Roblox acceptance. Xbox output is optional and requires its separate adapter/driver setup. These are separate milestones in [the roadmap](docs/ROADMAP.md).
+An Android Bluetooth keyboard/mouse test APK is built by the Android preview workflow. Native Bluetooth gamepad/XInput, game streaming, internet relay and multiple-controller multiplayer are not implemented. The new browser mouse/gyro path and native Bluetooth controls need physical Roblox acceptance. Xbox output is optional and requires its separate adapter/driver setup. These are separate milestones in [the roadmap](docs/ROADMAP.md).
 
 ## Project map
 

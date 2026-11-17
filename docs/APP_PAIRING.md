@@ -1,6 +1,8 @@
-# Native app pairing: implementation contract
+# Native app pairing: companion-mode implementation contract
 
 Status: planned, not implemented. The browser prototype still uses its documented manual CA setup for motion. The user requested a native Android app and Windows companion after the controller experience is usable. Installing a device-wide root CA must not become the app's normal onboarding.
+
+The owner accepted this pairing direction on 2026-11-17. Keep it for the Wi-Fi companion route. [BLUETOOTH_AND_DEPLOYMENT.md](BLUETOOTH_AND_DEPLOYMENT.md) explores an additional direct Bluetooth HID mode that could work without NONA software on the PC, subject to device/game tests. Ordinary Bluetooth data transport would still need a PC receiver. These are separate connection routes; direct HID uses OS Bluetooth pairing rather than this TLS/QR flow.
 
 ## Intended user flow
 

@@ -4,6 +4,8 @@
 
 NONA v1: a PC-friendly Android controller. Android supplies touch and motion input; the Windows companion delivers compatible keyboard/mouse/controller output. The current 0.5 source is a browser-based mobile-controls prototype, not the packaged v1 release. See MOBILE_CONTROLS.md for the movement/camera test and APP_PAIRING.md for the native app trust contract.
 
+On 2026-11-17 the owner accepted the companion pairing design and requested Bluetooth feasibility/deployment exploration. See BLUETOOTH_AND_DEPLOYMENT.md: native direct HID could make the PC download optional for validated input paths; Bluetooth data transport alone would still require a companion. This is a proposal and hardware probe gate, not an implemented Bluetooth feature or a verified no-PC-install promise.
+
 ## Ordered gates
 
 1. **Motion prototype:** implement calibration, orientation-aware tilt, touch fallback, neutral-on-loss and an HTTPS path. Pass automated tests, then physically test on the owner's Android/Windows setup using NONA Sprint and the already-working JavaScript Racer.

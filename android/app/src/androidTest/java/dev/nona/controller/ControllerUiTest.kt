@@ -61,6 +61,7 @@ class ControllerUiTest {
             scenario.moveToState(Lifecycle.State.CREATED)
             scenario.onActivity{activity->
                 assertFalse(activity.session.active)
+                assertEquals(0,activity.window.attributes.flags and android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 val reports=(activity.link as PreviewLink).reports
                 assertTrue(reports.takeLast(2).all{it.second.all{byte->byte.toInt()==0}})
             }

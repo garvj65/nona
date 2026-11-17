@@ -42,13 +42,13 @@ class BluetoothLink(private val context: Context) : ControllerLink {
     private var mouse = HidReports.mouse()
     override var changed: (LinkStatus) -> Unit = {}
     override var status = LinkStatus(); private set
-    override val ready: Boolean get() = wanted && status.ready && proxy != null && connected?.address == selected?.address
+    override val ready: Boolean get() = wanted && permitted() && status.ready && proxy != null && connected?.address == selected?.address
 
     private fun permitted() = Build.VERSION.SDK_INT < 31 ||
         context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
 
     private fun update(value: LinkStatus) { status = value; changed(value) }
-    private fun host(device: BluetoothDevice) = Computer(device.address, (device.name ?: "Windows computer").take(80))
+    private fun host(device: BluetoothDevice) = Computer(device.address, (device.name ?: "Windows computer").replace(Regex("[\\p{Cc}\\p{Cf}]"), " ").take(80))
 
     override fun start() {
         if (!permitted()) { update(LinkStatus("permission", message = "Allow Nearby devices to connect to your PC.")); return }
@@ -97,7 +97,11 @@ class BluetoothLink(private val context: Context) : ControllerLink {
         override fun onAppStatusChanged(pluggedDevice: BluetoothDevice?, registered: Boolean) {
             if (!current()) return
             if (!registered) { connected = null; update(LinkStatus("disconnected", message = "Bluetooth input paused. Keep NONA open and set up Bluetooth again.")); return }
-            update(LinkStatus("registered", registered = true, message = "Choose a paired computer, or pair a new one."))
+            val peer = connected
+            if(peer != null && peer.address == selected?.address) {
+                try { update(LinkStatus("connected", true, host(peer), "Connected. Open the controller when you're ready.")) }
+                catch (_: SecurityException) { permissionLost() }
+            } else update(LinkStatus("registered", registered = true, message = "Choose a paired computer, or pair a new one."))
         }
 
         override fun onConnectionStateChanged(device: BluetoothDevice, state: Int) {

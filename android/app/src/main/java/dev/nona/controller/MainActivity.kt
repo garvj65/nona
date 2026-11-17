@@ -151,7 +151,9 @@ class MainActivity : Activity(), SensorEventListener {
         if(!allowed()&&Build.VERSION.SDK_INT>=31){requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT),10);return}
         if(link.status.stage=="disabled"){
             systemPrompt=true
-            try{startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),20)}catch(_:RuntimeException){systemPrompt=false;Toast.makeText(this,"Allow Nearby devices and turn on Bluetooth in Settings.",Toast.LENGTH_LONG).show()}
+            try{startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),20)}
+            catch(_:SecurityException){systemPrompt=false;Toast.makeText(this,"Allow Nearby devices in Android settings, then retry.",Toast.LENGTH_LONG).show()}
+            catch(_:RuntimeException){systemPrompt=false;Toast.makeText(this,"Turn on Bluetooth in Settings.",Toast.LENGTH_LONG).show()}
         }else{link.stop();link.start()}
     }
     private fun pairNewComputer() {
@@ -201,12 +203,16 @@ class MainActivity : Activity(), SensorEventListener {
     private fun play() {
         if(!link.ready){pauseInput("Reconnect your computer first.");return}
         surface?.reset()
-        if(session.start()&&gyroActive()){gyroTime=0;lastGyro=SystemClock.elapsedRealtime();sensors.registerListener(this,gyro,SensorManager.SENSOR_DELAY_GAME)}
+        if(session.start()){
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            if(gyroActive()){gyroTime=0;lastGyro=SystemClock.elapsedRealtime();sensors.registerListener(this,gyro,SensorManager.SENSOR_DELAY_GAME)}
+        }
         updateController()
     }
     private fun pauseInput(message:String?=null) {
         if(!::session.isInitialized)return
         session.pause();surface?.reset();sensors.unregisterListener(this);gyroTime=0
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(inController)updateController(message)
     }
     private fun updateController(message:String?=null) {

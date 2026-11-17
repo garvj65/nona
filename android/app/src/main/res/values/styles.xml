@@ -1,10 +1,13 @@
 <resources>
-    <style name="Theme.Nona" parent="android:style/Theme.Material.Light.NoActionBar">
+    <!-- Dark Material base so dialogs, spinners and checkboxes match the graphite screens. -->
+    <style name="Theme.Nona" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#B95138</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#F4F2ED</item>
-        <item name="android:navigationBarColor">#F4F2ED</item>
+        <item name="android:colorAccent">#ECEBE7</item>
+        <item name="android:colorBackground">#0F1113</item>
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">#0F1113</item>
+        <item name="android:navigationBarColor">#0F1113</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
 </resources>

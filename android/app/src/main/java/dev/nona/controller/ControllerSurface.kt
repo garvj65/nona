@@ -17,9 +17,13 @@ class ControllerSurface(context: Context, private val session: InputSession, pri
     private val lookArea = RectF()
     var lookHeld = false; private set
     private val density = resources.displayMetrics.density
-    private val ink = Color.rgb(239, 236, 225)
-    private val muted = Color.rgb(147, 162, 163)
-    private val accent = Color.rgb(224, 185, 104)
+    private val ink = Color.rgb(236, 235, 231)
+    private val muted = Color.rgb(141, 147, 145)
+    private val press = Color.rgb(255, 107, 44)      // the only bright colour: "you are pressing this"
+    private val pressInk = Color.rgb(26, 12, 4)
+    private val surface = Color.rgb(25, 28, 31)
+    private val raised = Color.rgb(32, 36, 40)
+    private val line = Color.rgb(44, 49, 54)
 
     init { id = R.id.controller_surface; isFocusable = true; contentDescription = "Movement surface, camera surface, and action buttons" }
 
@@ -34,10 +38,10 @@ class ControllerSurface(context: Context, private val session: InputSession, pri
     }
 
     private fun box(canvas: Canvas, rect: RectF) {
-        paint.color = Color.rgb(31, 43, 45); paint.style = Paint.Style.FILL
-        canvas.drawRoundRect(rect, 14*density, 14*density, paint)
-        paint.color = Color.rgb(66, 81, 82); paint.style = Paint.Style.STROKE; paint.strokeWidth = density
-        canvas.drawRoundRect(rect, 14*density, 14*density, paint); paint.style = Paint.Style.FILL
+        paint.color = surface; paint.style = Paint.Style.FILL
+        canvas.drawRoundRect(rect, 12*density, 12*density, paint)
+        paint.color = line; paint.style = Paint.Style.STROKE; paint.strokeWidth = density
+        canvas.drawRoundRect(rect, 12*density, 12*density, paint); paint.style = Paint.Style.FILL
     }
 
     private fun text(canvas: Canvas, value: String, x: Float, y: Float, size: Float, color: Int = muted) {
@@ -46,29 +50,34 @@ class ControllerSurface(context: Context, private val session: InputSession, pri
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawColor(Color.rgb(21, 31, 33)); box(canvas,moveArea); box(canvas,lookArea)
+        val racing=session.profile==ControlProfile.RACING
+        canvas.drawColor(Color.rgb(15, 17, 19)); box(canvas,moveArea)
+        if(!racing)box(canvas,lookArea)
         val centre = origin ?: PointF(moveArea.centerX(),moveArea.centerY())
         val radius = min(moveArea.width(),moveArea.height())*.26f
-        paint.style=Paint.Style.STROKE; paint.strokeWidth=density; paint.color=Color.rgb(79,94,94)
+        paint.style=Paint.Style.STROKE;paint.strokeWidth=density;paint.color=line
         canvas.drawCircle(centre.x,centre.y,radius,paint)
-        paint.style=Paint.Style.FILL; paint.color=if(session.active)accent else Color.rgb(94,111,111)
+        // Thumb: a quiet ring at rest, solid while held.
         val handle=thumb?:centre
-        canvas.drawCircle(handle.x,handle.y,20*density,paint)
-        text(canvas,if(session.profile==ControlProfile.RACING)"STEER" else "MOVE",moveArea.centerX(),moveArea.bottom-18*density,10f)
-        text(canvas,if(session.profile==ControlProfile.RACING)"PEDALS" else "SWIPE TO LOOK",lookArea.centerX(),lookArea.top+24*density,10f)
+        paint.strokeWidth=2*density;paint.color=if(thumb!=null)ink else muted
+        if(thumb!=null){paint.style=Paint.Style.FILL;paint.color=raised;canvas.drawCircle(handle.x,handle.y,22*density,paint);paint.style=Paint.Style.STROKE;paint.color=ink}
+        canvas.drawCircle(handle.x,handle.y,22*density,paint);paint.style=Paint.Style.FILL
+        text(canvas,if(racing)"Steer" else "Touch anywhere, drag to move",moveArea.centerX(),moveArea.bottom-16*density,12f)
+        if(!racing)text(canvas,"Swipe to look",lookArea.centerX(),lookArea.bottom-16*density,12f,if(lookHeld)ink else muted)
         for((key,rect) in actions){
             val pressed=roles.values.contains(key)
-            paint.color=if(pressed)accent else Color.rgb(44,58,60)
+            paint.style=Paint.Style.FILL;paint.color=if(pressed)press else raised
             canvas.drawCircle(rect.centerX(),rect.centerY(),rect.width()/2,paint)
-            paint.style=Paint.Style.STROKE;paint.strokeWidth=density;paint.color=if(key=="a")accent else Color.rgb(96,112,113)
-            canvas.drawCircle(rect.centerX(),rect.centerY(),rect.width()/2,paint);paint.style=Paint.Style.FILL
-            val label=if(session.profile==ControlProfile.RACING) mapOf("a" to "Gas","b" to "Brake","x" to "Slide","y" to "Boost")[key]
+            if(!pressed){paint.style=Paint.Style.STROKE;paint.strokeWidth=density;paint.color=line
+                canvas.drawCircle(rect.centerX(),rect.centerY(),rect.width()/2,paint);paint.style=Paint.Style.FILL}
+            val label=if(racing) mapOf("a" to "Gas","b" to "Brake","x" to "Slide","y" to "Boost")[key]
                 else mapOf("a" to "Jump","b" to "Run","x" to "Use","y" to "Action")[key]
-            text(canvas,label.orEmpty(),rect.centerX(),rect.centerY()+4*density,12f,if(pressed)Color.rgb(25,34,35) else ink)
+            text(canvas,label.orEmpty(),rect.centerX(),rect.centerY()+4*density,13f,if(pressed)pressInk else ink)
         }
         if(!session.active){
-            paint.color=Color.argb(140,21,31,33);canvas.drawRect(0f,0f,width.toFloat(),height.toFloat(),paint)
-            text(canvas,"Paused — tap Play when your game is selected",width/2f,height/2f,15f,ink)
+            paint.color=Color.argb(185,15,17,19);canvas.drawRect(0f,0f,width.toFloat(),height.toFloat(),paint)
+            text(canvas,"Paused",width/2f,height/2f-6*density,18f,ink)
+            text(canvas,"Focus your game on the PC, then tap Play",width/2f,height/2f+16*density,13f,muted)
         }
     }
 

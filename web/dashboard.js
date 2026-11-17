@@ -26,12 +26,12 @@ function display(status){
   if(pad!==lastPad){lastPad=pad;editor('pad-fields',status.pad_mapping,padOptions);}
   if(tuning!==lastTuning){lastTuning=tuning;$('deadzone').value=status.tuning.deadzone;$('sensitivity').value=status.tuning.sensitivity;$('invert-y').checked=status.tuning.invert_y;}
   $('enable').disabled=!status.connected||!status.output_ready||!!status.countdown||status.armed;
-  $('keyboard-state').textContent=status.countdown?`Select game · ${Math.ceil(status.countdown)}s`:status.armed?`${status.output_mode==='gamepad'?'Xbox':'Keys'} ON`:'Output off';
+  $('keyboard-state').textContent=status.countdown?`Click your game · ${Math.ceil(status.countdown)}s`:status.armed?`Sending ${status.output_mode==='gamepad'?'Xbox input':'keys'}`:'Output off';document.body.classList.toggle('armed',!!status.armed);document.body.classList.toggle('arming',!!status.countdown);
   $('note').textContent=status.note+(status.target?` Target: ${status.target}`:'');
   $('pad-status').textContent=status.gamepad.connected?'Xbox virtual device connected. Verify it in Controller test or joy.cpl.':status.gamepad.error||(status.gamepad.package_installed?'Xbox adapter present; connect to check the driver.':'Xbox output is optional. See setup below; keyboard mode is ready without it.');
   $('pad-connect').disabled=!status.gamepad.supported||status.gamepad.connected;$('pad-disconnect').disabled=!status.gamepad.connected;
   const active=status.output_mode==='gamepad'?status.pad_mapping:status.mapping;
-  $('keys').replaceChildren(...Object.entries(active).map(([action,key])=>{const el=document.createElement('span');el.className='key'+(status.buttons.includes(action)?' on':'');el.textContent=`${names[action]} → ${key||'off'}`;return el;}));
+  $('keys').replaceChildren(...Object.entries(active).map(([action,key])=>{const el=document.createElement('span');el.className='key'+(status.buttons.includes(action)?' on':'')+(key?'':' off');const name=document.createElement('b');name.textContent=names[action];el.append(name,key||'off');return el;}));
   if(status.error||status.profile_error)showError(status.error||status.profile_error);
 }
 async function post(path,data){

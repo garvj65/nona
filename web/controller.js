@@ -49,8 +49,8 @@ function configure(config) {
     mobileLook=dual&&config.output_mode==='keyboard'&&!!config.look?.enabled;
     document.body.classList.toggle('mobile-look',mobileLook);
     $('look-settings').classList.toggle('hidden',!mobileLook);
-    $('move-label').textContent=mobileLook?'TOUCH + DRAG TO MOVE':'MOVE / LEFT STICK';
-    $('look-label').textContent=mobileLook?'SWIPE TO LOOK':'LOOK / RIGHT STICK';
+    $('move-label').textContent=mobileLook?'Touch anywhere, drag to move':'Move';
+    $('look-label').textContent=mobileLook?'Swipe to look':'Look';
     document.body.classList.toggle('racing-layout', racing);
     document.body.classList.toggle('dualstick-layout', dual);
     $('gamepad-controls').classList.toggle('hidden', racing||dual);
@@ -61,7 +61,7 @@ function configure(config) {
     $('controller-help').textContent=mobileLook?'Left thumb moves; swipe the right area to look. A jumps. Gyro assist adds camera motion while holding the look area.':racing?'Choose touch or tilt steering. Gas and Brake stay under your thumbs.':'Use both thumbs for simultaneous controls. Load a saved game profile to recall its bindings.';
   }
   const mapping=config.output_mode==='gamepad'?config.pad_mapping:config.mapping;
-  document.querySelectorAll('[data-button]').forEach(el=>{const hint=el.querySelector('span');if(hint)hint.textContent=mapping[el.dataset.button]||'Unmapped';});
+  document.querySelectorAll('[data-button]').forEach(el=>{const hint=el.querySelector('span');el.classList.toggle('unmapped',!mapping[el.dataset.button]);if(hint)hint.textContent=mapping[el.dataset.button]||'—';});
   if(mobileLook){
     const labels={a:'Jump',b:'Run',x:'Use',y:'Action'};
     document.querySelectorAll('#dualstick-controls [data-button]').forEach(el=>{const hint=el.querySelector('span');if(hint)hint.textContent=labels[el.dataset.button]||'';});

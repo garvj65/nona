@@ -1,33 +1,71 @@
-.desk{--bg:#f4f2ed;--panel:#eeece6;--text:#20292b;--muted:#626d6d;--lime:#a94830;--line:#d2d5ce;--violet:#557a72;color-scheme:light}
-.desk-wrap{max-width:1190px;margin:auto;padding:30px 38px 20px}
-.desk-header{padding-bottom:24px;border-bottom:1px solid var(--line);margin-bottom:34px}
-.desk .brand{font-size:20px;letter-spacing:.06em;font-weight:750;gap:12px}
-.desk .brand-icon{border-radius:3px;background:var(--text);color:var(--bg);width:29px;height:29px;font-size:19px;letter-spacing:0}
-.desk-meta{display:flex;align-items:center;gap:24px;font-size:12px;color:var(--muted)}
-.desk .pill{padding:0;border:0;border-radius:0}.desk .pill.connected{color:#386353}.desk .pill.connected .dot{background:#386353;box-shadow:none}
-.desk-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;margin-bottom:38px}
-.desk-heading h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:46px;letter-spacing:-.035em;margin:0 0 12px}
-.desk-heading p{font-size:14px;margin-bottom:0}.desk-heading .section-label{font:10px Consolas,monospace;letter-spacing:.12em;margin-bottom:12px;color:var(--muted)}
-.text-link{font-size:12px;color:var(--text);white-space:nowrap;text-decoration:none;border-bottom:1px solid #aab2aa;padding-bottom:4px}
-.desk-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:44px}
-.pairing{border-right:1px solid var(--line);padding-right:30px}.pairing .qr{margin:24px 0 20px;border:1px solid var(--line);border-radius:2px;width:165px;height:165px}
-.section-title{display:flex;align-items:center;gap:12px;margin-bottom:14px}.section-title>span{font:11px Consolas,monospace;color:var(--muted)}
-.desk h2{font-size:17px;font-weight:650;letter-spacing:-.015em;margin:0}.desk .small{font-size:13px;line-height:1.65}
-.desk button,.desk .button{border-radius:5px;background:#e8e8e0;color:var(--text);font-size:12px;font-weight:600;padding:10px 14px}
-.desk .primary{background:#b95138;color:#fff;border-color:#b95138}.desk .danger{background:transparent;border-color:#b76b59;color:#9b3e2d}.desk .secondary{background:transparent}
-.desk input,.desk select{background:#faf9f5;color:var(--text);border:1px solid var(--line);border-radius:4px;font:inherit}
-.desk .link-box input{padding:9px 8px;font:10px Consolas,monospace;color:var(--muted)}.desk .link-box{gap:6px}.desk .link-box button{padding:8px}
-.pairing-note{font-size:11px;line-height:1.6;margin:14px 0 22px}.desk .tiny{font-size:11px}
-.session-fields{display:grid;grid-template-columns:105px minmax(0,1fr);gap:13px;align-items:center;font-size:13px;margin:22px 0}
-.session-fields select{padding:11px;font-size:13px;max-width:100%;min-width:0}
-.session-instruction{max-width:540px;margin-bottom:16px}.session-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.session-actions #keyboard-state{margin-left:auto}
-.desk .notice{margin-top:18px;border-left:2px solid #b6bcb0;padding:3px 0 3px 12px;line-height:1.6;font-size:12px}
-.desk .keys{gap:6px;margin-top:15px}.desk .key{font:10px Consolas,monospace;padding:4px 6px;border-radius:3px;background:transparent}.desk .key.on{background:#d9e6d5;color:#244a30;border-color:#829b7c}
-.game-section{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
-.game-links{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}.game-links a{display:flex;flex-direction:column;padding:13px 0;text-decoration:none;color:var(--text);border-bottom:1px solid var(--line)}.game-links strong{font-size:13px;font-weight:600}.game-links span{font-size:11px;color:var(--muted);margin-top:3px}
-.advanced{margin-top:32px}.advanced>h2{margin-bottom:10px}
-.desk details{border-top:1px solid var(--line);padding-top:13px;margin-top:13px;font-size:12px}.desk summary{font-size:12px;font-weight:550}.desk details p{line-height:1.65}
-.desk .settings{gap:10px;font-size:12px}.desk .mapping-grid{gap:12px}.desk .mapping-grid label{font-size:12px}.desk code{background:#e6e6dd}.desk .error{color:#a63823}
-.desk footer{margin-top:45px;padding-top:18px;border-top:1px solid var(--line);font-size:11px}.desk footer a{color:var(--muted);text-decoration:none}
-@media(max-width:850px){.desk-wrap{padding:24px}.desk-layout{grid-template-columns:250px minmax(0,1fr);gap:28px}.pairing{padding-right:24px}.desk-heading{align-items:flex-start;flex-direction:column;gap:16px}.game-links{grid-template-columns:1fr}.desk-meta>span:first-child{display:none}}
-@media(max-width:640px){.desk-wrap{padding:20px}.desk-layout{grid-template-columns:1fr;gap:30px}.pairing{padding-right:0;border-right:0;border-bottom:1px solid var(--line);padding-bottom:22px}.desk-heading h1{font-size:38px}.desk-heading{margin-bottom:28px}.desk-header{margin-bottom:26px}.session-fields{grid-template-columns:1fr;gap:7px}.session-fields label:not(:first-child){margin-top:8px}.session-actions #keyboard-state{margin-left:0;flex-basis:100%}.desk footer{flex-direction:column;gap:7px}}
+/* Laptop companion. Same system as the phone: graphite, one signal colour.
+   Orange = the phone is pressing this right now. Green/amber/red = link and output state. */
+.desk{--bg:#0f1113;--panel:#16191c;--raised:#202428;--text:#ecebe7;--muted:#8d9391;--line:#262b30;--line-strong:#363d43;
+  --press:#ff6b2c;--ok:#3ecf6e;--warn:#e3a33a;--stop:#ef4f4f;--lime:var(--text);color-scheme:dark;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+.desk-wrap{max-width:1120px;margin:auto;padding:22px 32px 20px}
+
+/* Header = live state, not a tagline */
+.desk-header{display:flex;align-items:center;gap:24px;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.desk .brand{font-size:15px;font-weight:700;letter-spacing:.02em;color:var(--text);text-decoration:none}
+.status-strip{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+.status-sep{width:1px;height:16px;background:var(--line-strong)}
+.desk .pill,.output-state{display:inline-flex;align-items:center;gap:8px;padding:0;border:0;border-radius:0;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.desk .dot{width:8px;height:8px;border-radius:50%;background:var(--line-strong);box-shadow:none}
+.desk .pill.connected{color:var(--text)}.desk .pill.connected .dot{background:var(--ok)}
+.desk.arming .output-state{color:var(--warn)}.desk.arming .output-state .dot{background:var(--warn)}
+.desk.armed .output-state{color:var(--text)}.desk.armed .output-state .dot{background:var(--ok)}
+.text-link{font-size:12px;color:var(--muted);white-space:nowrap;text-decoration:none}
+.text-link:hover{color:var(--text)}
+
+/* Two columns: phone | output */
+.desk-layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:40px}
+.desk h2{font-size:15px;font-weight:650;letter-spacing:0;margin:0 0 6px}
+.desk p,.desk .small{color:var(--muted);font-size:13px;line-height:1.55}
+.pairing .qr{margin:18px 0 16px;width:190px;height:190px;padding:10px;border-radius:10px;background:#fff;border:0}
+.desk .tiny{font-size:12px;color:var(--muted)}
+.desk .link-box{gap:6px;margin-top:6px}
+.desk .link-box input{padding:8px;font:11px ui-monospace,Consolas,monospace;color:var(--muted);text-overflow:ellipsis}
+.pairing-note{font-size:12px;margin:12px 0 18px}
+
+.desk input,.desk select{background:var(--panel);color:var(--text);border:1px solid var(--line-strong);border-radius:8px;font:inherit}
+.desk button,.desk .button{border-radius:8px;background:var(--raised);border:1px solid var(--line-strong);color:var(--text);font-size:13px;font-weight:600;padding:9px 14px}
+.desk button:hover,.desk .button:hover{border-color:var(--muted)}
+.desk .primary{background:var(--text);color:#111;border-color:var(--text)}
+.desk .primary:hover{background:#fff}
+.desk .danger{background:transparent;border-color:color-mix(in srgb,var(--stop) 55%,transparent);color:var(--stop)}
+.desk .secondary{background:transparent}
+.desk button:focus-visible,.desk a:focus-visible,.desk select:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+
+.session-fields{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px 14px;align-items:center;font-size:13px;margin:16px 0 18px;color:var(--muted)}
+.session-fields select{padding:10px;font-size:13px;max-width:100%;min-width:0}
+.session-actions{display:flex;flex-wrap:wrap;gap:8px}
+.session-instruction{margin:10px 0 0}
+.desk .notice{margin-top:14px;border-left:2px solid var(--line-strong);padding:2px 0 2px 12px;font-size:13px;color:var(--muted)}
+.keys-title{margin:22px 0 0}
+.desk .keys{gap:6px;margin-top:8px}
+.desk .key{display:inline-flex;gap:6px;align-items:baseline;font:12px ui-monospace,Consolas,monospace;padding:5px 8px;border-radius:6px;border:1px solid var(--line-strong);background:transparent;color:var(--muted);min-width:0}
+.desk .key b{font:600 12px system-ui,sans-serif;color:var(--text)}
+.desk .key.off{opacity:.4}
+.desk .key.on{background:var(--press);border-color:var(--press);color:#1a0c04}
+.desk .key.on b{color:#1a0c04}
+
+.game-section{margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+.game-links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.game-links a{display:flex;flex-direction:column;padding:12px 14px;text-decoration:none;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.game-links a:hover{border-color:var(--line-strong)}
+.game-links strong{font-size:13px;font-weight:600}
+.game-links span{font-size:12px;color:var(--muted);margin-top:2px}
+
+.advanced{margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+.desk details{border-top:1px solid var(--line);padding-top:12px;margin-top:12px;font-size:13px;color:var(--muted)}
+.advanced>details:first-of-type{border-top:0;margin-top:4px}
+.desk summary{font-size:13px;font-weight:600;color:var(--text)}
+.desk details a,.desk footer a{color:var(--text)}
+.desk .settings{gap:10px;font-size:13px}.desk .mapping-grid{gap:10px}.desk .mapping-grid label{font-size:13px}
+.desk code{background:var(--raised)}.desk .error{color:var(--stop)}
+.desk footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.desk footer a{text-decoration:none}
+
+@media(max-width:850px){.desk-wrap{padding:20px}.desk-layout{grid-template-columns:230px minmax(0,1fr);gap:26px}.game-links{grid-template-columns:1fr}.desk-header{flex-wrap:wrap;gap:12px}.text-link{flex-basis:100%}}
+@media(max-width:640px){.desk-layout{grid-template-columns:1fr}.status-strip{flex-wrap:wrap}.session-fields{grid-template-columns:1fr;gap:6px}.desk footer{flex-direction:column;gap:6px}}

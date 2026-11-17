@@ -35,11 +35,16 @@ class MainActivity : Activity(), SensorEventListener {
     private val sensors by lazy { getSystemService(SensorManager::class.java) }
     private val gyro by lazy { sensors?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
     private val preferences by lazy { getSharedPreferences("nona-controls", MODE_PRIVATE) }
-    private val background = Color.rgb(244,242,237)
-    private val ink = Color.rgb(32,41,43)
-    private val muted = Color.rgb(102,113,113)
-    private val accent = Color.rgb(185,81,56)
-    private val dark = Color.rgb(21,31,33)
+    // One system with the web controller: graphite, white primary, colour only for state.
+    private val bg = Color.rgb(15,17,19)
+    private val raised = Color.rgb(32,36,40)
+    private val line = Color.rgb(54,61,67)
+    private val ink = Color.rgb(236,235,231)
+    private val muted = Color.rgb(141,147,145)
+    private val ok = Color.rgb(62,207,110)
+    private val warn = Color.rgb(227,163,58)
+    private val stopRed = Color.rgb(239,79,79)
+    private val dark = bg
     private var hostsSignature = ""
 
     private fun dp(value: Int) = (value*resources.displayMetrics.density).toInt()
@@ -51,8 +56,9 @@ class MainActivity : Activity(), SensorEventListener {
     }
     private fun button(value: String, primary: Boolean = false, action: () -> Unit) = Button(this).apply {
         text=value;isAllCaps=false;textSize=14f;typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL)
-        setTextColor(if(primary)Color.WHITE else ink)
-        background=shape(if(primary)accent else Color.rgb(232,232,225))
+        stateListAnimator=null;elevation=0f
+        setTextColor(if(primary)bg else ink)
+        background=if(primary)shape(ink) else shape(raised,line)
         minHeight=dp(48);setPadding(dp(16),dp(8),dp(16),dp(8));setOnClickListener{action()}
     }
     private fun LinearLayout.space(height: Int) { addView(View(this@MainActivity),LinearLayout.LayoutParams(1,dp(height))) }
@@ -111,7 +117,7 @@ class MainActivity : Activity(), SensorEventListener {
 
     private fun shell(color: Int): LinearLayout {
         window.statusBarColor=color;window.navigationBarColor=color
-        window.decorView.systemUiVisibility=if(color==background)View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR else 0
+        window.decorView.systemUiVisibility=0
         root=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setBackgroundColor(color) }
         root.setOnApplyWindowInsetsListener { view, insets ->
             if(Build.VERSION.SDK_INT>=30){val bars=insets.getInsets(WindowInsets.Type.systemBars());view.setPadding(bars.left,bars.top,bars.right,bars.bottom)}
@@ -121,43 +127,65 @@ class MainActivity : Activity(), SensorEventListener {
         setContentView(root);root.requestApplyInsets();return root
     }
 
+    private fun statusColor()=when{
+        link.ready->ok
+        link.status.stage in setOf("permission","unsupported","error","disabled")->stopRed
+        else->warn
+    }
+    private fun dot(color: Int)=View(this).apply{background=GradientDrawable().apply{shape=GradientDrawable.OVAL;setColor(color)}}
+
     private fun renderPairing() {
         if(inController)return
-        val outer=shell(background)
-        val content=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setPadding(dp(24),dp(22),dp(24),dp(24)) }
+        val outer=shell(bg)
+        val content=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setPadding(dp(22),dp(18),dp(22),dp(24)) }
         val scroll=ScrollView(this);scroll.addView(content);outer.addView(scroll)
-        content.full(text("NONA",20f).apply{typeface=Typeface.create("sans-serif-black",Typeface.NORMAL);letterSpacing=.08f})
-        content.space(7);content.full(text(if(link.preview)"UI PREVIEW · NO BLUETOOTH OUTPUT" else "BLUETOOTH / ANDROID PREVIEW",10f,muted))
-        content.space(30)
-        content.full(text("Choose your\ncomputer.",38f).apply{typeface=Typeface.create("serif",Typeface.BOLD)})
-        content.space(12);content.full(text("Your phone becomes a keyboard and mouse. No PC companion is needed for this mode.",15f,muted))
-        content.space(22)
-        content.full(text(link.status.message,15f).apply{id=R.id.link_status})
-        content.space(12)
+        val top=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL;gravity=Gravity.CENTER_VERTICAL}
+        top.addView(text("NONA",15f).apply{typeface=Typeface.create("sans-serif",Typeface.BOLD);letterSpacing=.04f},LinearLayout.LayoutParams(0,-2,1f))
+        top.addView(text(if(link.preview)"UI preview · no Bluetooth output" else "${BuildConfig.VERSION_NAME}",12f,muted))
+        content.full(top)
+        content.space(36)
+        content.full(text("Connect to your PC",24f).apply{typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL)})
+        content.space(6);content.full(text("Your phone acts as a Bluetooth keyboard and mouse. Nothing to install on the PC.",14f,muted))
+        content.space(24)
+        val state=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL;gravity=Gravity.CENTER_VERTICAL}
+        state.addView(dot(statusColor()),LinearLayout.LayoutParams(dp(8),dp(8)).apply{rightMargin=dp(10)})
+        state.addView(text(link.status.message,14f).apply{id=R.id.link_status},LinearLayout.LayoutParams(0,-2,1f))
+        content.full(state)
+        content.space(14)
         if(!link.status.registered){
             val title=when{!allowed()->"Allow Bluetooth";link.status.stage=="disabled"->"Turn on Bluetooth";link.status.stage=="preparing"->"Retry Bluetooth setup";else->"Set up Bluetooth"}
             content.full(button(title,true){prepareBluetooth()}.apply{id=R.id.link_action})
-        }else{
+        }else if(!link.ready){
             content.full(button("Pair a new computer"){pairNewComputer()}.apply{id=R.id.link_action})
         }
-        content.space(24);content.full(text("PAIRED DEVICES",10f,muted))
+        if(link.ready){
+            content.full(button("Open controller",true){openController()}.apply{id=R.id.open_controller})
+        }
+        content.space(30);content.full(text("Paired devices",13f,muted))
+        content.space(8)
         val hosts=link.computers();hostsSignature=hosts.joinToString{it.address}
         val list=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;id=R.id.host_list}
-        if(hosts.isEmpty())list.addView(text("On Windows, open Bluetooth settings → Add device → Bluetooth, then select this phone. Return here and choose your computer.",14f,muted))
+        if(hosts.isEmpty())list.addView(text("On the PC: Settings → Bluetooth & devices → Add device → Bluetooth, then pick this phone. Tap \"Pair a new computer\" first so the PC can see it.",14f,muted))
         for(host in hosts){
             val connected=link.status.host?.address==host.address&&link.ready
-            list.addView(button(if(connected)"${host.name} · Connected" else host.name){session.pause();link.connect(host)}.apply{
-                isEnabled=link.status.registered&&link.status.stage!="connecting"
+            val enabled=link.status.registered&&link.status.stage!="connecting"
+            val row=LinearLayout(this).apply{
+                orientation=LinearLayout.HORIZONTAL;gravity=Gravity.CENTER_VERTICAL;setPadding(dp(16),0,dp(16),0)
+                background=shape(raised,if(connected)ok else line);isClickable=true;isFocusable=true;isEnabled=enabled;alpha=if(enabled)1f else .5f
                 contentDescription="Connect to ${host.name}"
-            },LinearLayout.LayoutParams(-1,dp(52)).apply{bottomMargin=dp(8)})
+                setOnClickListener{if(isEnabled){session.pause();link.connect(host)}}
+            }
+            row.addView(text(host.name,15f),LinearLayout.LayoutParams(0,-2,1f))
+            row.addView(text(if(connected)"Connected" else "Connect",13f,if(connected)ok else muted))
+            list.addView(row,LinearLayout.LayoutParams(-1,dp(56)).apply{bottomMargin=dp(8)})
         }
         content.full(list)
         if(link.ready){
-            content.space(12);content.full(button("Open controller",true){openController()}.apply{id=R.id.open_controller})
-            content.space(10);content.full(button("Disconnect"){session.pause();link.disconnect()})
+            content.space(4);content.full(button("Disconnect"){session.pause();link.disconnect()})
+            content.space(8);content.full(button("Pair a new computer"){pairNewComputer()})
         }
-        content.space(28);content.full(text("Use keyboard/mouse controls in your game. Xbox controller emulation is not part of this Bluetooth preview.",12f,muted))
-        content.space(8)
+        content.space(28);content.full(text("Keyboard and mouse only for now. Xbox-style gamepad output is a later milestone.",12f,muted))
+        content.space(10)
         content.full(button("Connection details"){showDetails()})
     }
 
@@ -231,9 +259,13 @@ class MainActivity : Activity(), SensorEventListener {
     }
     private fun updateController(message:String?=null) {
         if(!inController)return
-        findViewById<Button>(R.id.play_stop)?.text=if(session.active)"Stop" else "Play"
+        findViewById<Button>(R.id.play_stop)?.apply{
+            text=if(session.active)"Stop" else "Play"
+            background=if(session.active)shape(Color.TRANSPARENT,stopRed) else shape(ink)
+            setTextColor(if(session.active)stopRed else bg)
+        }
         findViewById<Button>(R.id.play_stop)?.isEnabled=link.ready
-        findViewById<TextView>(R.id.controller_status)?.text=message?:if(session.active)"${link.status.host?.name} · Playing${if(gyroActive())" · Gyro assist" else ""}" else "Paused · Focus your game on the PC, then tap Play"
+        findViewById<TextView>(R.id.controller_status)?.text=message?:if(session.active)"${link.status.host?.name} · Playing${if(gyroActive())" · Gyro assist" else ""}" else "Paused · focus your game on the PC, then tap Play"
     }
     private fun backToDevices() {
         pauseInput();inController=false;surface=null;requestedOrientation=ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;renderPairing()

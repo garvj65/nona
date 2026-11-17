@@ -21,7 +21,9 @@ Made before the owner's first physical 0.6 test, to remove failure modes that wo
 - **Movement.** Per-axis 0.22 thresholds turned forward into forward+strafe once the thumb drifted about 13°. Native and Wi-Fi keyboard movement now use equal 45° sectors with 7.5° hysteresis.
 - **Native racing.** Arrow-key steering is pulse-width modulated by stick distance (togglable). The native tick moved from 50 Hz to 100 Hz.
 
-Local checks for this change: 55 Python tests, 23 Node tests, 13 native JVM tests (2 new), and a Kotlin typecheck of main + debug/release sources against the API 35 platform jar. Gradle lint, APK assembly and the emulator UI test still need the Android Actions run.
+- **Interface.** Phone controller, laptop dashboard and the Android app now share one graphite system. Colour carries meaning only: orange while a control is pressed (also on the dashboard's live binding chips), green/amber/red for link and output state. Stop and other non-game buttons moved to the phone's top bar, away from the thumbs. Face buttons use the standard diamond, unmapped buttons are dimmed, racing pedals are bottom-aligned under the right thumb, and the template-style eyebrows, serif headline and numbered sections are gone. The Android theme moved to dark Material, so dialogs and spinners match.
+
+Local checks for this change: 55 Python tests, 23 Node tests, all 18 rendered browser smoke checks (system Chrome, Android-emulated viewport, no page errors), 13 native JVM tests (2 new), and a Kotlin typecheck of main + debug/release sources against the API 35 platform jar. Gradle lint, APK assembly and the emulator UI test still need the Android Actions run.
 
 ## Device evidence
 

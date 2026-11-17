@@ -1,49 +1,163 @@
-.controller-mode{display:flex;gap:10px;align-items:center;font-size:11px;margin-bottom:9px}.controller-mode select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px;font:inherit}.controller-mode #bridge-status{margin-left:auto}.racing-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px 25px;align-items:center;min-height:250px;touch-action:none}.wheel-area{display:flex;align-items:center;flex-direction:column;gap:9px}.wheel{width:190px;height:190px;border:14px solid #344354;border-radius:50%;background:#101923;box-shadow:inset 0 0 0 3px #536378,0 6px 0 #060b12;position:relative;touch-action:none;cursor:grab}.wheel-face{position:absolute;inset:0;will-change:transform}.wheel-marker{position:absolute;left:calc(50% - 5px);top:-14px;width:10px;height:19px;background:var(--lime);border-radius:3px}.wheel-hub{position:absolute;left:calc(50% - 25px);top:calc(50% - 25px);width:50px;height:50px;background:#222f3e;border:1px solid #566277;border-radius:50%;display:grid;place-items:center;font-size:22px;font-weight:800;color:var(--lime)}.wheel-spoke{position:absolute;background:#344354;height:15px;top:calc(50% - 7px);width:50%}.spoke-left{left:0}.spoke-right{right:0}.spoke-down{left:50%;top:50%;transform-origin:left center;transform:rotate(90deg)}.pedal-area{display:flex;gap:18px;align-items:flex-end;justify-content:center}.pedal{width:105px;height:140px;flex-direction:column;gap:8px;border-radius:17px;touch-action:none}.pedal span{font-size:9px;font-weight:500}.gas{background:var(--lime);border-color:var(--lime);color:#152300;height:165px}.brake{background:var(--violet);border-color:var(--violet);color:#24163e}.pedal.pressed,.race-extra.pressed{filter:brightness(.7);transform:translateY(3px)}.race-extras{grid-column:1/-1;display:flex;gap:12px;justify-content:center}.race-extra{padding:9px 20px;font-size:11px;touch-action:none}.nitro{color:var(--lime)}.offline .racing-controls{opacity:.4;pointer-events:none}@media(orientation:landscape) and (max-height:500px){.controller-mode{position:absolute;left:50%;top:16px;transform:translateX(-50%);margin:0}.controller-mode label,.controller-mode #bridge-status{display:none}.racing-controls{min-height:205px;position:relative;grid-template-columns:1fr 1fr}.wheel{width:163px;height:163px;border-width:12px}.wheel-area .tiny{font-size:8px}.pedal{width:87px;height:109px}.gas{height:137px}.race-extras{position:absolute;left:50%;top:8%;transform:translateX(-50%);flex-direction:column;gap:8px}.race-extra{padding:8px 11px}.racing-layout .utility{top:52%;left:50%;gap:7px}.racing-layout .utility-key{min-width:87px;padding:5px 10px}.racing-layout .pad-help{font-size:8px}}@media(max-width:600px) and (orientation:portrait){.racing-controls{gap:22px 8px;min-height:310px}.wheel{width:150px;height:150px;border-width:11px}.wheel-area .tiny{font-size:8px;max-width:145px;text-align:center}.pedal-area{gap:10px}.pedal{width:61px;height:115px;font-size:12px;padding:4px}.gas{height:140px}.pedal span{font-size:8px}.controller-mode #bridge-status{font-size:9px}.racing-controls .race-extras{margin-top:-25px}}
-.action-pad{display:grid;grid-template-columns:repeat(2,75px);gap:10px}.action-pad .action-key{width:75px;height:75px;transform:none;font-size:27px}.action-pad .x{background:#8fc8ff;color:#102a48}.action-pad .y{background:#f1d976;color:#3c3104}.shoulder-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:6px 0 12px;touch-action:none}.shoulder-bar button{font-size:11px;padding:7px 15px;touch-action:none}.shoulder-bar label{font-size:10px;display:flex;align-items:center;gap:6px;color:var(--muted)}.shoulder-bar input{width:75px;accent-color:var(--lime);touch-action:none}.dualstick-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:210px;touch-action:none}.stick-group{display:flex;flex-direction:column;align-items:center;gap:10px}.stick{position:relative;width:165px;height:165px;border:2px solid #536276;background:#172230;border-radius:50%;display:grid;place-items:center;touch-action:none}.stick-thumb{width:65px;height:65px;border-radius:50%;background:#35485a;border:2px solid var(--lime);pointer-events:none;will-change:transform}.compact-face{display:grid;grid-template-columns:repeat(3,43px);grid-template-rows:repeat(3,43px);gap:5px}.compact-face button{border-radius:50%;font-size:16px;padding:0;touch-action:none}.face-y{grid-area:1/2;color:#f1d976}.face-x{grid-area:2/1;color:#8fc8ff}.face-b{grid-area:2/3;color:#b2a0ff}.face-a{grid-area:3/2;color:var(--lime)}.compact-face .pressed,.shoulder-bar .pressed{background:#476441}.offline .dualstick-controls,.offline .shoulder-bar{opacity:.4;pointer-events:none}@media(max-width:600px) and (orientation:portrait){.action-pad{grid-template-columns:repeat(2,64px);gap:8px}.action-pad .action-key{width:64px;height:64px;font-size:25px}.shoulder-bar{gap:5px}.shoulder-bar input{width:57px}.shoulder-bar button{padding:7px 10px}.stick{width:100px;height:100px}.stick-thumb{width:43px;height:43px}.compact-face{grid-template-columns:repeat(3,29px);grid-template-rows:repeat(3,29px);gap:2px}.compact-face button{font-size:12px}.stick-group .tiny{font-size:8px}.dualstick-controls{gap:5px;min-height:200px}}@media(orientation:landscape) and (max-height:500px){.dualstick-controls{min-height:155px}.stick{width:135px;height:135px}.stick-thumb{width:52px;height:52px}.dualstick-layout .utility{position:static;transform:none;flex-direction:row;margin:3px 0 8px;gap:12px}.dualstick-layout .utility-key{padding:5px 18px;min-width:100px}.dualstick-layout .pad-help{display:none}.shoulder-bar{margin:3px 0 5px}.stick-group{gap:4px}.compact-face{grid-template-columns:repeat(3,37px);grid-template-rows:repeat(3,37px);gap:3px}}
-.controller-body{overscroll-behavior:none;min-height:100dvh;-webkit-user-select:none;user-select:none}.pad-shell{max-width:960px;margin:auto;padding:max(18px,env(safe-area-inset-top)) max(22px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left))}.pad-shell header{margin-bottom:20px}.pad-meta{display:flex;justify-content:space-between;align-items:center;gap:15px}.pad-meta .eyebrow{margin:0}.pad-message{font-size:12px;color:var(--muted);margin:8px 0 12px;min-height:18px}.pad-controls{display:flex;justify-content:space-between;align-items:center;gap:22px;min-height:260px;touch-action:none}.dpad{display:grid;grid-template-columns:repeat(3,69px);grid-template-rows:repeat(3,69px);gap:4px}.pad-key{border-radius:13px;padding:0;font-size:29px;background:#222d3d;border-bottom:4px solid #131b29;touch-action:none}.up{grid-area:1/2}.left{grid-area:2/1}.right{grid-area:2/3}.down{grid-area:3/2}.pad-centre{grid-area:2/2;display:grid;place-items:center;color:#556379;font-size:28px}.action-pad{display:flex;gap:18px;align-items:center}.action-key{width:105px;height:105px;border-radius:50%;display:flex;flex-direction:column;gap:0;justify-content:center;font-size:35px;touch-action:none;box-shadow:0 7px 0 #080d14}.action-key span{font-size:9px;font-weight:650}.a{background:var(--lime);color:#182506;border-color:var(--lime);transform:translateY(-22px)}.b{background:var(--violet);color:#201739;border-color:var(--violet);transform:translateY(22px)}.pad-key.pressed{background:#435a42;border-color:var(--lime);color:var(--lime);transform:translateY(2px)}.action-key.pressed{filter:brightness(.75);box-shadow:0 2px 0 #080d14}.utility{display:flex;gap:18px;justify-content:center;margin:10px 0 20px;touch-action:none}.utility-key{font-size:12px;flex-direction:column;gap:1px;background:#1a2230;padding:8px 25px;min-width:120px;touch-action:none}.utility-key span{font-size:9px;color:var(--muted)}.utility-key.pressed{border-color:var(--lime);color:var(--lime)}.pad-bottom{display:flex;justify-content:center;gap:8px}.pad-bottom button{font-size:11px;padding:8px 12px}.pad-help{text-align:center;margin-top:16px;margin-bottom:0}.offline .pad-controls,.offline .utility{opacity:.4;pointer-events:none}@media(max-width:600px) and (orientation:portrait){.pad-shell{padding-top:24px}.pad-shell header{margin-bottom:32px}.pad-controls{min-height:280px;gap:14px}.dpad{grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:3px}.pad-key{font-size:25px;border-radius:10px}.action-pad{gap:12px;flex-direction:column-reverse}.action-key{width:79px;height:79px;font-size:29px}.a{transform:translate(8px,-4px)}.b{transform:translate(-13px,4px)}.utility{margin:8px 0 30px}.pad-meta .eyebrow{font-size:9px}.pill{font-size:10px;padding:6px 9px}.brand{font-size:19px}}@media(orientation:landscape) and (max-height:500px){.pad-shell{padding-top:10px}.pad-shell header{margin-bottom:8px}.pad-message{margin:4px 0}.pad-controls{min-height:200px}.dpad{grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:3px}.action-key{width:92px;height:92px}.utility{position:absolute;left:50%;top:51%;transform:translateX(-50%);flex-direction:column;gap:10px;margin:0}.utility-key{min-width:94px;padding:6px 12px}.pad-bottom{margin-top:0}.pad-help{margin-top:8px;font-size:9px}}
+/* NONA phone controller.
+   Rules: the play surface owns the screen; setup lives in one thin strip; Stop and other
+   non-game actions sit in the top bar, away from both thumbs. Colour carries meaning only:
+   orange = you are pressing it, green/amber/red = connection. Everything else is graphite. */
+:root{
+  --bg:#0f1113;--surface:#191c1f;--raised:#202428;--line:#2c3136;--line-strong:#3b4248;
+  --text:#ecebe7;--muted:#8d9391;--faint:#5d6463;
+  --press:#ff6b2c;--press-ink:#1a0c04;--ok:#3ecf6e;--warn:#e3a33a;--stop:#ef4f4f;
+  --r:12px;color-scheme:dark;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+.hidden{display:none!important}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text)}
+.controller-body{overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;font-size:13px;line-height:1.35}
+p{margin:0}
+a{color:var(--text)}
+button,select{font:inherit;color:inherit}
+button{background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:0;font-weight:600;cursor:pointer;touch-action:none;display:inline-flex;align-items:center;justify-content:center}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,select:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 26px 6px 10px;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:right 12px center,right 7px center;background-size:5px 5px;background-repeat:no-repeat;min-width:0}
 
-.controller-mode select{min-width:0;max-width:60vw;overflow:hidden;text-overflow:ellipsis}.controller-mode label{flex-shrink:0}
-.brand-icon{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:4px;font-size:18px}
-.pill.connected .dot{box-shadow:none}.controller-body .pill{border-radius:5px}
-.controller-body button,.controller-body select{border-radius:7px}
-.controller-body .action-key{box-shadow:none}.controller-body .wheel{box-shadow:none}
-.compact-face button{display:flex;flex-direction:column;gap:0;line-height:1.2}
-.compact-face button b{font-weight:600}.compact-face button span{display:none;font-size:8px}
-.mobile-look .compact-face button span{display:block;margin-top:1px}
-.look-settings{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:8px 0;padding:8px;border:1px solid var(--line);border-radius:12px}
-.look-settings label{display:flex;align-items:center;gap:5px;font-size:11px}
-.look-settings select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px}
-.look-settings button{font-size:10px;padding:7px 10px}
-.look-settings #gyro-status{flex-basis:100%;font-size:10px}
+/* Frame: bar / strip / play / utility */
+.pad-shell{height:100dvh;display:flex;flex-direction:column;gap:6px;
+  padding:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+.bar{display:flex;align-items:center;gap:10px;min-width:0;height:36px}
+.pill{display:inline-flex;align-items:center;gap:7px;font-weight:600;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.pill.connected .dot{background:var(--ok)}
+.offline .pill .dot{background:var(--stop)}
+.rtt{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pad-message{flex:1;min-width:0;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#controller-profile{max-width:34vw}
+.bridge{color:var(--muted);white-space:nowrap}
+.bar-actions{display:flex;gap:6px;flex-shrink:0}
+.bar-actions button{height:32px;padding:0 12px;font-size:12px}
+.quiet{background:transparent}
+.stop{background:transparent;border-color:color-mix(in srgb,var(--stop) 55%,transparent);color:var(--stop);min-width:64px}
+.stop:active{background:var(--stop);color:#fff}
+
+.strip{display:flex;align-items:center;gap:8px;min-width:0;overflow-x:auto;scrollbar-width:none;white-space:nowrap;font-size:12px}
+.strip::-webkit-scrollbar{display:none}
+.strip button{height:30px;padding:0 11px;font-size:12px;flex-shrink:0;touch-action:manipulation}
+.strip label{display:inline-flex;align-items:center;gap:5px;color:var(--muted);flex-shrink:0}
+.strip select{padding-top:4px;padding-bottom:4px}
+.strip input[type=checkbox]{accent-color:var(--press);margin:0}
+.strip-note{color:var(--muted);overflow:hidden;text-overflow:ellipsis;min-width:0}
+#motion-setup{flex-shrink:0;color:var(--muted)}
+#motion-setup summary{cursor:pointer}
+#motion-setup p{white-space:normal;margin:6px 0;max-width:60ch}
+.motion-active .strip-note,.gyro-active .strip-note{color:var(--text)}
+
+.play{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;touch-action:none}
+.play>section{flex:1;min-height:0}
+.offline .play,.offline .utility{opacity:.35;pointer-events:none}
+
+/* Pressed is the only bright state on the surface. */
+.pressed{background:var(--press)!important;border-color:var(--press)!important;color:var(--press-ink)!important}
+.pressed span{color:var(--press-ink)!important}
+
+/* Gamepad: d-pad left, diamond right */
+.gamepad{display:flex;align-items:center;justify-content:space-between;padding:0 2vw}
+.dpad{--k:min(18vh,66px);display:grid;grid-template-columns:repeat(3,var(--k));grid-template-rows:repeat(3,var(--k));gap:3px}
+.pad-key{font-size:calc(var(--k)*.4);border-radius:10px}
+.up{grid-area:1/2}.left{grid-area:2/1}.right{grid-area:2/3}.down{grid-area:3/2}
+.pad-centre{grid-area:2/2;background:var(--surface);border-radius:4px;margin:30%}
+.face{--f:min(19vh,72px);display:grid;grid-template-columns:repeat(3,var(--f));grid-template-rows:repeat(3,var(--f));gap:2px}
+.face>button{border-radius:50%;flex-direction:column;font-size:calc(var(--f)*.34);line-height:1;gap:3px}
+.face>button span{font-size:10px;font-weight:500;color:var(--muted);max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.y,.face-y{grid-area:1/2}.x,.face-x{grid-area:2/1}.b,.face-b{grid-area:2/3}.a,.face-a{grid-area:3/2}
+.gamepad .unmapped,.utility .unmapped{opacity:.32}
+
+/* Dual stick */
+.shoulders{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.shoulders button{height:32px;padding:0 18px;font-size:12px}
+.shoulders label{flex:1;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+.shoulders input{flex:1;accent-color:var(--muted);touch-action:none;min-width:0}
+.shoulders label:nth-of-type(2){flex-direction:row-reverse}
+.dualstick{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 1vw}
+.stick-group{display:flex;flex-direction:column;align-items:center;gap:6px}
+.stick{--s:min(52vh,210px);width:var(--s);height:var(--s);border-radius:50%;background:var(--surface);border:1px solid var(--line);position:relative;display:grid;place-items:center;touch-action:none}
+.stick-thumb{width:40%;height:40%;border-radius:50%;background:var(--raised);border:1px solid var(--line-strong);pointer-events:none;will-change:transform}
+.stick-label{font-size:11px;color:var(--muted)}
+.compact-face{--f:min(13vh,50px)}
+.compact-face>button b{font-weight:600}
+.compact-face>button span{display:none}
+.mobile-look .compact-face>button span{display:block}
+.mobile-look .compact-face{--f:min(15vh,58px)}
+
+/* Move & look: two open touch areas instead of sticks */
+.mobile-look .dualstick{align-items:stretch;padding:0}
 .mobile-look .stick-group{flex:1;min-width:0}
-.mobile-look .stick{width:100%;height:180px;border-radius:22px;overflow:hidden}
-.mobile-look #left-stick{background:#202e31}
-.mobile-look #left-stick .stick-thumb{position:absolute;width:52px;height:52px;left:var(--stick-x,50%);top:var(--stick-y,50%);margin-left:-26px;margin-top:-26px}
-.mobile-look #right-stick{background:#202e31}
+.mobile-look .stick{width:100%;height:auto;flex:1;border-radius:var(--r);overflow:hidden}
+.mobile-look .compact-face{align-self:center}
+.mobile-look #left-stick .stick-thumb{position:absolute;width:56px;height:56px;left:var(--stick-x,50%);top:var(--stick-y,50%);margin:-28px 0 0 -28px;background:transparent;border:2px solid var(--muted)}
 .mobile-look #right-stick .stick-thumb{display:none}
-.mobile-look #right-stick::after{content:'+';font-size:48px;font-weight:200;color:#6b817d;opacity:.45;pointer-events:none}
-.mobile-look.gyro-active #right-stick{border-color:var(--lime)}
-.mobile-look .compact-face{flex-shrink:0;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px)}
-.mobile-look .compact-face button{font-size:19px}
-.mobile-look .compact-face .face-a{background:#243a27;border-color:var(--lime)}
-@media(max-width:600px) and (orientation:portrait){
-  .mobile-look .dualstick-controls{display:grid;grid-template-columns:1fr 1fr;gap:15px 10px;min-height:0}
-  .mobile-look .compact-face{grid-column:1/-1;grid-row:2;display:flex;justify-content:center;gap:14px}
-  .mobile-look .compact-face button{width:52px;height:52px}
-  .mobile-look .stick{height:165px}
-  .mobile-look .pad-meta{display:none}
+.mobile-look.gyro-active #right-stick{border-color:var(--text)}
+
+/* Racing: wheel left, pedals pinned bottom-right under the thumb */
+.racing{display:grid;grid-template-columns:1fr auto auto;align-items:end;gap:2vw;padding:0 1vw}
+.wheel-area{align-self:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.wheel{--w:min(62vh,240px);width:var(--w);height:var(--w);border-radius:50%;border:calc(var(--w)*.075) solid var(--raised);background:var(--surface);position:relative;touch-action:none;cursor:grab}
+.wheel-face{position:absolute;inset:0;will-change:transform}
+.wheel-marker{position:absolute;left:calc(50% - 3px);top:calc(var(--w)*-.075);width:6px;height:calc(var(--w)*.075);background:var(--text);border-radius:2px}
+.wheel-spoke{position:absolute;background:var(--raised);height:12px;top:calc(50% - 6px);width:50%}
+.spoke-left{left:0}.spoke-right{right:0}
+.spoke-down{left:50%;top:50%;transform-origin:left center;transform:rotate(90deg)}
+.wheel-hub{position:absolute;left:calc(50% - 18%);top:calc(50% - 18%);width:36%;height:36%;border-radius:50%;background:var(--raised);border:1px solid var(--line-strong)}
+.motion-active .wheel{pointer-events:none;border-color:var(--line-strong)}
+.motion-active .wheel-area .stick-label{color:var(--text)}
+.race-extras{display:flex;flex-direction:column;gap:8px;align-self:center}
+.race-extra{height:44px;padding:0 18px;font-size:13px}
+.pedal-area{display:flex;gap:10px;align-items:flex-end}
+.pedal{--p:min(15vw,112px);width:var(--p);border-radius:14px;flex-direction:column;gap:4px;font-size:16px}
+.pedal span{font-size:10px;font-weight:500;color:var(--muted)}
+.brake{height:min(48vh,180px)}
+.gas{height:min(68vh,250px)}
+
+/* Select / Start: small, centred, between thumbs */
+.utility{display:flex;justify-content:center;gap:10px}
+.utility-key{height:36px;min-width:96px;padding:0 14px;flex-direction:column;gap:0;font-size:12px;line-height:1.1}
+.utility-key span{font-size:9px;font-weight:500;color:var(--muted)}
+.pad-help{display:none}
+.rotate-hint{display:none}
+
+/* Portrait: stack, keep everything reachable, suggest rotating */
+@media (orientation:portrait){
+  .pad-shell{height:auto;min-height:100dvh;gap:10px}
+  .play{flex:none}
+  .bar{flex-wrap:wrap;height:auto;row-gap:8px}
+  .pad-message{order:9;flex-basis:100%;white-space:normal}
+  #controller-profile{max-width:none;flex:1}
+  .bar-actions{flex-basis:100%;justify-content:flex-end}
+  .bridge{display:none}
+  .strip{flex-wrap:wrap;white-space:normal;overflow:visible}
+  .strip-note{flex-basis:100%}
+  .play{min-height:52vh}
+  .gamepad{--k:min(15vw,60px)}
+  .dpad{--k:min(15vw,60px)}
+  .face{--f:min(17vw,64px)}
+  .dualstick{flex-wrap:wrap;justify-content:space-around;row-gap:14px}
+  .stick{--s:min(40vw,160px)}
+  .compact-face{order:3;--f:min(12vw,48px)}
+  .mobile-look .dualstick{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .mobile-look .stick{height:min(42vw,170px);flex:none}
+  .mobile-look .compact-face{grid-column:1/-1;justify-self:center}
+  .racing{grid-template-columns:1fr 1fr;grid-template-areas:"wheel wheel" "extras pedals";row-gap:18px}
+  .wheel-area{grid-area:wheel}.race-extras{grid-area:extras;align-self:end}.pedal-area{grid-area:pedals;justify-content:flex-end}
+  .wheel{--w:min(62vw,240px)}
+  .pedal{--p:min(20vw,96px)}.brake{height:120px}.gas{height:160px}
+  .pad-help{display:block;color:var(--muted);font-size:12px;text-align:center}
+  .rotate-hint{display:block;color:var(--faint);font-size:12px;text-align:center}
 }
-@media(orientation:landscape) and (max-height:500px){
-  .mobile-look .pad-meta,.mobile-look .pad-message,.mobile-look .pad-help{display:none}
-  .mobile-look .controller-mode{position:static;transform:none;justify-content:center;margin:0 0 3px}
-  .mobile-look .look-settings{justify-content:center;margin:3px 0;padding:4px;gap:7px}
-  .mobile-look .look-settings button{padding:4px 7px;font-size:9px}
-  .mobile-look .look-settings label{font-size:9px}
-  .mobile-look .look-settings #gyro-status{font-size:9px;text-align:center;line-height:12px}
-  .mobile-look .stick{height:130px}
-  .mobile-look .dualstick-controls{min-height:150px;gap:18px}
-  .mobile-look .stick-group .tiny{font-size:8px}
-  .mobile-look .compact-face{grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px)}
-  .mobile-look .utility{margin:2px 0 6px}
+/* Short landscape phones (most of them): drop secondary bar text first */
+@media (orientation:landscape) and (max-height:430px){
+  .bridge{display:none}
+  .pad-shell{gap:4px}
+  #motion-setup{display:none}
 }
-.motion-panel{border:1px solid var(--line);border-radius:12px;padding:9px;margin:8px 0}.motion-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.motion-actions button{font-size:10px;padding:7px 10px}.motion-actions label{font-size:10px;display:flex;gap:4px;align-items:center}.motion-actions select{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:3px}.motion-panel p{margin:6px 0 0}.motion-panel details{margin-top:7px;font-size:10px}.motion-panel details p{font-size:11px}.motion-panel details .button{font-size:10px;padding:6px 9px}.motion-active #wheel{pointer-events:none;border-color:#69814d}.motion-active .wheel-area>.tiny{color:var(--lime)}@media(orientation:landscape) and (max-height:500px){.racing-layout .pad-meta,.racing-layout .pad-message,.racing-layout .pad-help{display:none}.motion-panel{padding:4px 7px;margin:3px 0}.motion-actions{gap:7px;justify-content:center}.motion-actions button{font-size:9px;padding:4px 7px}.motion-actions label{font-size:9px}.motion-panel #motion-status{font-size:9px;line-height:12px;margin:2px 0 0;text-align:center}.motion-panel #motion-setup{display:none}}
+@media (orientation:landscape) and (max-width:760px){.rtt,.pad-message{display:none}}

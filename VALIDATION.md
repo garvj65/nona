@@ -1,4 +1,4 @@
-# Validation — NONA Android Bluetooth preview 0.6
+# Validation — NONA Android Bluetooth preview 0.6.1
 
 Updated: 2026-11-17. Physical Wi-Fi results were reported on 2026-11-16.
 
@@ -11,6 +11,17 @@ The report/session tests cover descriptor lengths, report bounds, neutral startu
 The redesigned Wi-Fi dashboard and phone controls passed the existing [NONA checks run 44051171867](https://github.com/garvj65/nona/actions/runs/44051171867), including Python/Node tests and Android-emulated Chromium. Dashboard screenshots were also captured at desktop and compact widths, with no horizontal overflow.
 
 Follow [docs/ANDROID_BLUETOOTH.md](docs/ANDROID_BLUETOOTH.md) to install the test APK and record physical Bluetooth acceptance. The native racing profile currently uses keyboard steering; calibrated position-based racing tilt remains available in the existing Wi-Fi controller. Native gyro assistance applies to Move & look.
+
+## 0.6.1 pre-flight changes (no new device evidence)
+
+Made before the owner's first physical 0.6 test, to remove failure modes that would otherwise end that test early. None of these is a physical pass.
+
+- **Bluetooth lifecycle.** AOSP `HidDeviceService` unregisters a HID app whose importance drops below visible. 0.6 also unregistered on every `onStop`, so a screen lock or an OEM full-screen pairing prompt dropped the Windows link. 0.6.1 keeps registration through a `connectedDevice` foreground service while input stays paused, with a ten-minute off-screen cutoff.
+- **Reconnect.** 0.6 disconnected any Windows-initiated HID connection unless that computer was already selected in this app session, including the connection Windows opens right after pairing. 0.6.1 accepts it from the remembered computer, or from any bonded computer within 150 s of **Pair a new computer**, and reconnects the remembered computer after registration unless the user tapped Disconnect.
+- **Movement.** Per-axis 0.22 thresholds turned forward into forward+strafe once the thumb drifted about 13°. Native and Wi-Fi keyboard movement now use equal 45° sectors with 7.5° hysteresis.
+- **Native racing.** Arrow-key steering is pulse-width modulated by stick distance (togglable). The native tick moved from 50 Hz to 100 Hz.
+
+Local checks for this change: 55 Python tests, 23 Node tests, 13 native JVM tests (2 new), and a Kotlin typecheck of main + debug/release sources against the API 35 platform jar. Gradle lint, APK assembly and the emulator UI test still need the Android Actions run.
 
 ## Device evidence
 

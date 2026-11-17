@@ -4,7 +4,7 @@
 
 NONA turns an Android phone into a Wi-Fi controller for a Windows laptop. Open the controller in your phone browser, pair with a QR code, and play. The laptop runs the game; the phone supplies the controls.
 
-Version **0.6 preview** adds a native Android **Bluetooth keyboard/mouse** app, with a simpler pairing screen and a dedicated play surface. The Windows controller desk and browser controls have a quieter, task-focused design. The existing Wi-Fi, racing, saved-profile and optional Xbox paths remain available.
+Version **0.6.1 preview** (Bluetooth lifecycle, reconnect and movement fixes on top of 0.6) adds a native Android **Bluetooth keyboard/mouse** app, with a simpler pairing screen and a dedicated play surface. The Windows controller desk and browser controls have a quieter, task-focused design. The existing Wi-Fi, racing, saved-profile and optional Xbox paths remain available.
 
 **[Install and test the Android preview](docs/ANDROID_BLUETOOTH.md)** · [Android build artifacts](https://github.com/garvj65/nona/actions/workflows/android.yml) · [Wi-Fi mobile controls](docs/MOBILE_CONTROLS.md)
 

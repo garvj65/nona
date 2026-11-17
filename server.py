@@ -38,6 +38,25 @@ def steering_direction(value, previous=0):
     return 0
 
 
+def stick_direction(x, y, previous=(0, 0)):
+    """Map a radial stick to 8-way keys with equal 45-degree sectors.
+
+    Per-axis thresholds made forward leak into strafing after ~13 degrees of thumb drift.
+    Hysteresis keeps the current direction until the stick is 30 degrees away from it.
+    """
+    length = math.hypot(x, y)
+    active = previous != (0, 0)
+    if not math.isfinite(length) or length < (0.12 if active else 0.22):
+        return 0, 0
+    angle = math.atan2(y, x)
+    if active:
+        gap = abs(angle - math.atan2(previous[1], previous[0])) % (2 * math.pi)
+        if min(gap, 2 * math.pi - gap) <= math.pi / 8 + math.pi / 24:
+            return previous
+    centre = round(angle / (math.pi / 4)) * (math.pi / 4)
+    return round(math.cos(centre)), round(math.sin(centre))
+
+
 def local_addresses():
     addresses = {"127.0.0.1", "localhost"}
     with contextlib.suppress(OSError):
@@ -510,12 +529,16 @@ def create_app(port=8765, engine=None, addresses=None, profile_path=None, gamepa
                     buttons, steering, axes = [], 0, {}
                     pointer = {}
                 axes = {axis: float(axes.get(axis, 0)) for axis in AXES}
-                direction = steering_direction(steering if room.layout == "racing" or steering else axes["lx"], room.steer_direction)
+                if room.layout == "racing" or steering:
+                    direction = steering_direction(steering, room.steer_direction)
+                    vertical = steering_direction(axes["ly"], room.vertical_direction)
+                else:
+                    direction, vertical = stick_direction(axes["lx"], axes["ly"],
+                                                          (room.steer_direction, room.vertical_direction))
                 effective = set(buttons)
                 if direction:
                     effective.discard("right" if direction < 0 else "left")
                     effective.add("left" if direction < 0 else "right")
-                vertical = steering_direction(axes["ly"], room.vertical_direction)
                 if vertical:
                     effective.discard("up" if vertical > 0 else "down")
                     effective.add("down" if vertical > 0 else "up")

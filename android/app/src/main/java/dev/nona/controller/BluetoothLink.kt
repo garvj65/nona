@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 
 data class Computer(val address: String, val name: String)
 data class LinkStatus(
@@ -22,8 +23,11 @@ interface ControllerLink : ReportSink {
     fun start()
     fun computers(): List<Computer>
     fun connect(computer: Computer)
+    /** User-initiated: also stops automatic reconnection until a computer is chosen again. */
     fun disconnect()
     fun stop()
+    /** The user is about to pair from Windows: accept that new computer's first connection. */
+    fun expectPairing() {}
 }
 
 @SuppressLint("MissingPermission") // Each entry checks permission; revocation is caught at the Bluetooth boundary.
@@ -37,6 +41,8 @@ class BluetoothLink(private val context: Context) : ControllerLink {
     private var requesting = false
     private var epoch = 0
     private var attempt = 0
+    private var autoConnect = true
+    private var pairingUntil = 0L
     private val timer = Handler(Looper.getMainLooper())
     private var keyboard = HidReports.keyboard()
     private var mouse = HidReports.mouse()
@@ -106,12 +112,16 @@ class BluetoothLink(private val context: Context) : ControllerLink {
                     update(LinkStatus("connected", true, host(peer), "Connected. Open the controller when you're ready."))
                 }
                 catch (_: SecurityException) { permissionLost() }
-            } else update(LinkStatus("registered", registered = true, message = "Choose a paired computer, or pair a new one."))
+            } else {
+                update(LinkStatus("registered", registered = true, message = "Choose a paired computer, or pair a new one."))
+                remembered()?.let { if (autoConnect) connect(host(it)) }
+            }
         }
 
         override fun onConnectionStateChanged(device: BluetoothDevice, state: Int) {
             if (!current()) return
             try {
+                adopt(device, state)
                 if (device.address != selected?.address || device.bondState != BluetoothDevice.BOND_BONDED) {
                     if (state == BluetoothProfile.STATE_CONNECTED) hid.disconnect(device)
                     return
@@ -159,7 +169,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
 
         override fun onSetProtocol(device: BluetoothDevice, protocol: Byte) {
             if (!current() || !status.registered || device.address != connected?.address || protocol == BluetoothHidDevice.PROTOCOL_REPORT_MODE) return
-            disconnect()
+            drop()
             update(LinkStatus("error", true, message = "This computer requested an unsupported input mode. Reconnect or use the Wi-Fi controller."))
         }
 
@@ -169,6 +179,26 @@ class BluetoothLink(private val context: Context) : ControllerLink {
             update(LinkStatus(if (status.registered) "registered" else "idle", status.registered, message = "Computer removed the connection. Pair again to continue."))
         }
     }
+
+    /**
+     * Windows usually opens the HID channels itself (right after pairing, and when it wakes).
+     * Accept that only from the computer the user already chose, or during the pairing window.
+     */
+    private fun adopt(device: BluetoothDevice, state: Int) {
+        if (selected != null || device.bondState != BluetoothDevice.BOND_BONDED) return
+        if (state != BluetoothProfile.STATE_CONNECTING && state != BluetoothProfile.STATE_CONNECTED) return
+        val pairing = SystemClock.elapsedRealtime() < pairingUntil
+        if (pairing || (autoConnect && device.address == preferences.getString("address", null))) {
+            selected = device; autoConnect = true; if (pairing) pairingUntil = 0
+        }
+    }
+
+    private fun remembered(): BluetoothDevice? {
+        val address = preferences.getString("address", null) ?: return null
+        return try { adapter?.bondedDevices?.firstOrNull { it.address == address } } catch (_: SecurityException) { null }
+    }
+
+    override fun expectPairing() { pairingUntil = SystemClock.elapsedRealtime() + 150_000 }
 
     override fun computers(): List<Computer> {
         if (!permitted() || adapter == null) return emptyList()
@@ -181,7 +211,8 @@ class BluetoothLink(private val context: Context) : ControllerLink {
 
     override fun connect(computer: Computer) {
         if (!permitted() || !status.registered || adapter == null) return
-        disconnect()
+        drop()
+        autoConnect = true
         try {
             val peer = adapter.bondedDevices.firstOrNull { it.address == computer.address } ?: return
             selected = peer
@@ -191,7 +222,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
             else timer.postDelayed({
                 if (currentAttempt == attempt && status.stage == "connecting" && !ready) {
                     val registered = status.registered
-                    disconnect()
+                    drop()
                     update(LinkStatus(if (registered) "registered" else "idle", registered, message = "Computer did not connect. Check Windows Bluetooth, then select it again."))
                 }
             }, 12000)
@@ -208,7 +239,9 @@ class BluetoothLink(private val context: Context) : ControllerLink {
         catch (_: RuntimeException) { false }
     }
 
-    override fun disconnect() {
+    override fun disconnect() { autoConnect = false; drop() }
+
+    private fun drop() {
         ++attempt
         send(HidReports.KEYBOARD, HidReports.keyboard()); send(HidReports.MOUSE, HidReports.mouse())
         val peer = connected ?: selected
@@ -218,7 +251,7 @@ class BluetoothLink(private val context: Context) : ControllerLink {
     }
 
     override fun stop() {
-        disconnect(); wanted = false; requesting = false; ++epoch
+        drop(); wanted = false; requesting = false; ++epoch
         val service = proxy; proxy = null
         if (service != null) {
             try { if (permitted()) service.unregisterApp() } catch (_: RuntimeException) { }

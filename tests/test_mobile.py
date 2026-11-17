@@ -153,6 +153,22 @@ class MobileProtocolTests(unittest.TestCase):
         self.assertFalse(self.room.engine.armed)
         self.assertFalse(self.room.engine.held)
 
+    def test_stick_uses_eight_equal_sectors_with_hysteresis(self):
+        import math
+        from server import stick_direction
+        polar = lambda deg, r=1: (r * math.cos(math.radians(deg)), r * math.sin(math.radians(deg)))
+        self.assertEqual(stick_direction(*polar(-70)), (0, -1))  # 20 degrees of drift is still forward
+        self.assertEqual(stick_direction(*polar(-45)), (1, -1))
+        self.assertEqual(stick_direction(*polar(-90, .2)), (0, 0))
+        self.assertEqual(stick_direction(*polar(-62), previous=(0, -1)), (0, -1))
+        self.assertEqual(stick_direction(*polar(-55)), (1, -1))
+        with self.client.websocket_connect(self.path, headers=self.origin) as ws:
+            self.room.engine.arm()
+            for seq, (x, y), keys in [(0, polar(-70, .8), {'w'}), (1, polar(-62, .8), {'w'}),
+                                      (2, polar(-40, .8), {'w', 'd'}), (3, (0, 0), set())]:
+                self.packet(ws, seq, axes={'lx': x, 'ly': y})
+                self.assertEqual(self.room.engine.held, keys)
+
     def test_stop_and_profile_changes_discard_motion_and_release_drag(self):
         with self.client.websocket_connect(self.path, headers=self.origin) as ws:
             self.room.engine.arm()

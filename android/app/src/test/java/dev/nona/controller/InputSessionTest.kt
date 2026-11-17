@@ -72,4 +72,38 @@ class InputSessionTest {
         }
         assertEquals(mapOf(1 to 64,2 to 32),input);assertEquals(mapOf(1 to 8),output)
     }
+
+    @Test fun eightWaySectorsKeepStraightAheadClean(){
+        fun at(degrees:Double,length:Float=1f)=StickMath.eightWay(
+            (kotlin.math.cos(Math.toRadians(degrees))*length).toFloat(),(kotlin.math.sin(Math.toRadians(degrees))*length).toFloat())
+        // Screen y grows downward, so -90° is forward (W).
+        assertEquals(0 to -1,at(-90.0+20))   // 20° thumb drift: per-axis thresholds used to add strafe here
+        assertEquals(1 to -1,at(-45.0))
+        assertEquals(1 to 0,at(0.0))
+        assertEquals(0 to -1,at(-90.0+20,.5f)) // same answer at half deflection
+        assertEquals(0 to 0,at(-90.0,.2f))
+        // Hysteresis: once moving forward, a 28° wobble does not flicker into a diagonal.
+        val drift=StickMath.eightWay(kotlin.math.cos(Math.toRadians(-62.0)).toFloat(),kotlin.math.sin(Math.toRadians(-62.0)).toFloat(),0,-1)
+        assertEquals(0 to -1,drift)
+        assertEquals(0 to -1,StickMath.eightWay(0f,-.15f,0,-1))
+        assertEquals(0 to 0,StickMath.eightWay(Float.NaN,0f))
+    }
+    @Test fun pulsedSteeringIsProportionalAndFullLockHolds(){
+        var now=0L;val sink=Sink();val input=InputSession(sink,{now})
+        input.profile=ControlProfile.RACING;input.start()
+        fun rightHeldMs(x:Float):Int{
+            input.move(x,0f);var held=0
+            repeat(100){input.flush();if(sink.reports.last{it.first==1}.second.contains(0x4F))held+=10;now+=10}
+            return held/10
+        }
+        val half=rightHeldMs(.5f);val full=rightHeldMs(1f)
+        assertTrue("half lock should hold right 50-70% of the time, was $half%",half in 50..70)
+        assertEquals(100,full)
+        input.move(0f,0f);input.flush();assertFalse(sink.reports.last{it.first==1}.second.contains(0x4F))
+        // A new press is immediately "on", so steering response never waits for the next pulse.
+        input.move(-.2f,0f);input.flush();assertTrue(sink.reports.last{it.first==1}.second.contains(0x50))
+        input.pulsedSteering=false;input.move(.3f,0f);now+=95;input.flush()
+        assertTrue(sink.reports.last{it.first==1}.second.contains(0x4F))
+        assertEquals(0f,StickMath.steerDuty(.1f),0f);assertEquals(1f,StickMath.steerDuty(.95f),0f)
+    }
 }

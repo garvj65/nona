@@ -1,15 +1,30 @@
 package dev.nona.controller
 
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.roundToInt
+import kotlin.math.sin
 
 enum class ControlProfile(val title: String) { MOVE_LOOK("Move & look"), RACING("Racing") }
 
-class InputSession(private val sink: ReportSink, private val failed: () -> Unit = {}) {
+class InputSession(
+    private val sink: ReportSink,
+    private val clock: () -> Long = { System.nanoTime() / 1_000_000 },
+    private val failed: () -> Unit = {}
+) {
     var active = false; private set
     var profile = ControlProfile.MOVE_LOOK
         set(value) { pause(); field = value }
     var holdRight = true
     var lookSpeed = 1f
+    /** Racing only: duty-cycle the arrow key so keyboard games see proportional steering. */
+    var pulsedSteering = true
+    private var steer = 0f
+    private var steerSign = 0
+    private var pulseStart = 0L
     private val actions = mutableSetOf<String>()
     private var horizontal = 0
     private var vertical = 0
@@ -30,6 +45,7 @@ class InputSession(private val sink: ReportSink, private val failed: () -> Unit 
     fun pause() {
         active = false
         actions.clear(); horizontal = 0; vertical = 0; lookHeld = false; dx = 0f; dy = 0f
+        steer = 0f; steerSign = 0
         keyboardCache = null; mouseButtons = false
         sink.send(HidReports.KEYBOARD, HidReports.keyboard())
         sink.send(HidReports.MOUSE, HidReports.mouse())
@@ -45,8 +61,25 @@ class InputSession(private val sink: ReportSink, private val failed: () -> Unit 
 
     fun move(x: Float, y: Float) {
         if (!active || !x.isFinite() || !y.isFinite()) return
-        horizontal = direction(x.coerceIn(-1f, 1f), horizontal)
-        vertical = direction(y.coerceIn(-1f, 1f), vertical)
+        val cx = x.coerceIn(-1f, 1f); val cy = y.coerceIn(-1f, 1f)
+        if (profile == ControlProfile.RACING) {
+            steer = cx
+            horizontal = direction(cx, horizontal); vertical = 0
+        } else {
+            val (h, v) = StickMath.eightWay(cx, cy, horizontal, vertical)
+            horizontal = h; vertical = v
+        }
+    }
+
+    /** Which steering key is down right now. Full lock holds it; partial lock pulses it. */
+    private fun steeringKey(now: Long): Int {
+        if (!pulsedSteering) return horizontal
+        val sign = when { steer > StickMath.STEER_DEADZONE -> 1; steer < -StickMath.STEER_DEADZONE -> -1; else -> 0 }
+        if (sign != steerSign) { steerSign = sign; pulseStart = now } // new press starts "on" for immediate response
+        if (sign == 0) return 0
+        val duty = StickMath.steerDuty(abs(steer))
+        val phase = Math.floorMod(now - pulseStart, StickMath.PULSE_PERIOD_MS)
+        return if (phase < duty * StickMath.PULSE_PERIOD_MS) sign else 0
     }
 
     fun action(name: String, down: Boolean) {
@@ -81,7 +114,8 @@ class InputSession(private val sink: ReportSink, private val failed: () -> Unit 
             if ("x" in actions) keys.add(0x08)
             if ("y" in actions) keys.add(0x14)
         } else {
-            if (horizontal < 0) keys.add(0x50) else if (horizontal > 0) keys.add(0x4F)
+            val steering = steeringKey(clock())
+            if (steering < 0) keys.add(0x50) else if (steering > 0) keys.add(0x4F)
             if ("a" in actions) keys.add(0x52)
             if ("b" in actions) keys.add(0x51)
             if ("x" in actions) keys.add(0x2C)
@@ -99,6 +133,39 @@ class InputSession(private val sink: ReportSink, private val failed: () -> Unit 
             if (!sink.send(HidReports.MOUSE, HidReports.mouse(x, y, right))) { pause(); failed(); return }
             mouseButtons = right
         }
+    }
+}
+
+object StickMath {
+    const val STEER_DEADZONE = .12f
+    const val PULSE_PERIOD_MS = 100L
+    private const val SECTOR = PI / 4
+    private const val KEEP = PI / 8 + PI / 24 // 22.5° sector half-width + 7.5° hysteresis
+
+    /**
+     * Map a radial stick to 8-way WASD. Per-axis thresholds made "straight ahead" leak into
+     * strafing once the thumb drifted ~13°; 45° sectors give every direction equal room.
+     */
+    fun eightWay(x: Float, y: Float, previousH: Int = 0, previousV: Int = 0): Pair<Int, Int> {
+        val length = hypot(x, y)
+        val wasActive = previousH != 0 || previousV != 0
+        if (!length.isFinite() || length < if (wasActive) .12f else .22f) return 0 to 0
+        val angle = atan2(y.toDouble(), x.toDouble())
+        if (wasActive) {
+            val previous = atan2(previousV.toDouble(), previousH.toDouble())
+            var gap = abs(angle - previous) % (2 * PI)
+            if (gap > PI) gap = 2 * PI - gap
+            if (gap <= KEEP) return previousH to previousV
+        }
+        val centre = (angle / SECTOR).roundToInt() * SECTOR
+        return cos(centre).roundToInt() to sin(centre).roundToInt()
+    }
+
+    /** 0.12 → 15% key-down time, 0.9+ → held continuously. */
+    fun steerDuty(magnitude: Float): Float = when {
+        !magnitude.isFinite() || magnitude <= STEER_DEADZONE -> 0f
+        magnitude >= .9f -> 1f
+        else -> .15f + .85f * (magnitude - STEER_DEADZONE) / (.9f - STEER_DEADZONE)
     }
 }
 

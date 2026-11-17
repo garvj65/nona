@@ -17,6 +17,8 @@ import android.provider.Settings
 import android.view.*
 import android.widget.*
 
+private const val IDLE_LINK_MS = 10 * 60 * 1000L
+
 class MainActivity : Activity(), SensorEventListener {
     lateinit var link: ControllerLink; private set
     lateinit var session: InputSession; private set
@@ -31,7 +33,7 @@ class MainActivity : Activity(), SensorEventListener {
     private var lastGyro = 0L
     private val handler = Handler(Looper.getMainLooper())
     private val sensors by lazy { getSystemService(SensorManager::class.java) }
-    private val gyro by lazy { sensors.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
+    private val gyro by lazy { sensors?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
     private val preferences by lazy { getSharedPreferences("nona-controls", MODE_PRIVATE) }
     private val background = Color.rgb(244,242,237)
     private val ink = Color.rgb(32,41,43)
@@ -63,8 +65,10 @@ class MainActivity : Activity(), SensorEventListener {
         session=InputSession(link) { pauseInput("Connection interrupted. Reconnect before playing.") }
         session.lookSpeed=preferences.getFloat("lookSpeed",1f)
         session.holdRight=preferences.getBoolean("holdRight",true)
+        session.pulsedSteering=preferences.getBoolean("pulsedSteering",true)
         invertGyro=preferences.getBoolean("invertGyro",false)
         link.changed={ status ->
+            keepLink(status)
             if(!status.ready)pauseInput(status.message)
             if(inController)updateController() else renderPairing()
         }
@@ -74,14 +78,23 @@ class MainActivity : Activity(), SensorEventListener {
     override fun onResume() {
         super.onResume();foreground=true;systemPrompt=false
         if(allowed())link.start()
+        keepLink(link.status)
         handler.post(ticker)
     }
     override fun onPause() {
         pauseInput();foreground=false;handler.removeCallbacks(ticker)
         super.onPause()
     }
-    override fun onStop() { if(!systemPrompt)link.stop();super.onStop() }
-    override fun onDestroy() { handler.removeCallbacksAndMessages(null);link.stop();super.onDestroy() }
+    override fun onStart() { super.onStart();handler.removeCallbacks(idleStop) }
+    // Input is already neutral (onPause). The link itself survives a lock or a pairing screen,
+    // so returning only needs Play. Ten idle minutes off-screen release the computer entirely.
+    override fun onStop() { handler.removeCallbacks(idleStop);handler.postDelayed(idleStop,IDLE_LINK_MS);super.onStop() }
+    override fun onDestroy() { handler.removeCallbacksAndMessages(null);link.stop();LinkService.stop(this);super.onDestroy() }
+    private val idleStop=Runnable{ if(!systemPrompt){link.stop();LinkService.stop(this)} }
+    private fun keepLink(status: LinkStatus) {
+        if(link.preview)return
+        if(status.registered){ if(foreground)LinkService.start(this) } else LinkService.stop(this)
+    }
     override fun onConfigurationChanged(newConfig: Configuration) { super.onConfigurationChanged(newConfig);pauseInput();if(inController)renderController()else renderPairing() }
 
     private val ticker=object:Runnable {
@@ -91,7 +104,8 @@ class MainActivity : Activity(), SensorEventListener {
             if(gyroActive()&&session.active&&SystemClock.elapsedRealtime()-lastGyro>750){gyroEnabled=false;pauseInput("Motion readings stopped. Tap Play to continue with touch.")}
             if(session.active)surface?.invalidate()
             if(!inController){val signature=link.computers().joinToString{it.address};if(signature!=hostsSignature)renderPairing()}
-            handler.postDelayed(this,if(inController)20 else 1500)
+            // 100 Hz: smoother relative camera and 10 ms resolution for pulsed steering.
+            handler.postDelayed(this,if(inController)10 else 1500)
         }
     }
 
@@ -159,7 +173,7 @@ class MainActivity : Activity(), SensorEventListener {
     private fun pairNewComputer() {
         if(link.preview)return
         if(Build.VERSION.SDK_INT>=31&&checkSelfPermission(Manifest.permission.BLUETOOTH_ADVERTISE)!=PackageManager.PERMISSION_GRANTED){requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_ADVERTISE),11);return}
-        session.pause();systemPrompt=true
+        session.pause();systemPrompt=true;link.expectPairing()
         try{startActivityForResult(Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,120),21)}
         catch(_:RuntimeException){systemPrompt=false;Toast.makeText(this,"Open Android Bluetooth settings to make this phone discoverable.",Toast.LENGTH_LONG).show()}
     }
@@ -205,13 +219,13 @@ class MainActivity : Activity(), SensorEventListener {
         surface?.reset()
         if(session.start()){
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            if(gyroActive()){gyroTime=0;lastGyro=SystemClock.elapsedRealtime();sensors.registerListener(this,gyro,SensorManager.SENSOR_DELAY_GAME)}
+            if(gyroActive()){gyroTime=0;lastGyro=SystemClock.elapsedRealtime();sensors?.registerListener(this,gyro,SensorManager.SENSOR_DELAY_GAME)}
         }
         updateController()
     }
     private fun pauseInput(message:String?=null) {
         if(!::session.isInitialized)return
-        session.pause();surface?.reset();sensors.unregisterListener(this);gyroTime=0
+        session.pause();surface?.reset();sensors?.unregisterListener(this);gyroTime=0
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(inController)updateController(message)
     }
@@ -238,8 +252,9 @@ class MainActivity : Activity(), SensorEventListener {
         body.full(CheckBox(this).apply{text="Third-person camera (hold right mouse)";isChecked=session.holdRight;setOnCheckedChangeListener{_,checked->session.holdRight=checked}})
         body.full(CheckBox(this).apply{text=if(gyro==null)"Gyro unavailable on this phone" else "Gyro assist while touching the look area";isEnabled=gyro!=null&&session.profile==ControlProfile.MOVE_LOOK;isChecked=gyroEnabled;setOnCheckedChangeListener{_,checked->gyroEnabled=checked}})
         body.full(CheckBox(this).apply{text="Invert gyro Y";isChecked=invertGyro;setOnCheckedChangeListener{_,checked->invertGyro=checked}})
-        body.full(text("Movement uses keyboard directions. Keep NONA open while playing. Stop before switching PC applications.",12f,muted))
-        AlertDialog.Builder(this).setTitle("Controls").setView(body).setPositiveButton("Done"){_,_->preferences.edit().putFloat("lookSpeed",session.lookSpeed).putBoolean("holdRight",session.holdRight).putBoolean("invertGyro",invertGyro).apply();updateController()}.show()
+        body.full(CheckBox(this).apply{text="Racing: proportional steering (pulses the arrow key)";isChecked=session.pulsedSteering;setOnCheckedChangeListener{_,checked->session.pulsedSteering=checked}})
+        body.full(text("Movement uses 8-way keyboard directions. Turn off proportional steering for games that act once per key press (lane switchers, menus). Keep NONA open while playing. Stop before switching PC applications.",12f,muted))
+        AlertDialog.Builder(this).setTitle("Controls").setView(body).setPositiveButton("Done"){_,_->preferences.edit().putFloat("lookSpeed",session.lookSpeed).putBoolean("holdRight",session.holdRight).putBoolean("invertGyro",invertGyro).putBoolean("pulsedSteering",session.pulsedSteering).apply();updateController()}.show()
     }
     private fun showDetails() {
         val report="NONA ${BuildConfig.VERSION_NAME}\n${Build.MANUFACTURER} ${Build.MODEL}\nAndroid ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\nState: ${link.status.stage}\nHID registered: ${link.status.registered}\nHID connected: ${link.ready}\n${if(link.preview)"UI preview; no radio output" else link.status.message}"

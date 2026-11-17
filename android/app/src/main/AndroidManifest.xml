@@ -5,14 +5,20 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <!-- Keeps HID registered while NONA is off-screen; input itself still pauses. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application android:label="NONA" android:icon="@drawable/ic_nona" android:theme="@style/Theme.Nona"
         android:allowBackup="false" android:supportsRtl="true" android:usesCleartextTraffic="false">
-        <activity android:name=".MainActivity" android:exported="true"
-            android:configChanges="orientation|screenSize|keyboardHidden">
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name=".LinkService" android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
     </application>
 </manifest>

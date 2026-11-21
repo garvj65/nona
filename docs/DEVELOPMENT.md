@@ -65,3 +65,4 @@ Artifacts: `nona-android-preview` (the installable APK, kept for 30 days), `nona
 - **No secrets in the repo.** Signing keys, `.pem` files and local CAs are gitignored and must stay that way.
 - **Android main-thread timing.** Don't schedule a repeating main-looper message faster than about 15 ms. It keeps Espresso from ever seeing the UI idle, so the emulator test hangs.
 - **Changelog.** Add an entry under the next version in [CHANGELOG.md](../CHANGELOG.md).
+- **Licensing.** NONA is [Apache-2.0](../LICENSE). Contributions are accepted under the same license. New dependencies must use a license compatible with Apache-2.0 (MIT, BSD and Apache are fine; GPL is not).

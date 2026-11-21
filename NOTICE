@@ -1,0 +1,12 @@
+NONA
+Copyright 2026 Garv Jhajharia
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+"NONA" and the NONA logo are names and marks of the project author. The Apache
+License does not grant permission to use them (Section 6). Forks and derived
+products must use a different name and must not imply endorsement.
+
+Third-party software used at runtime is installed separately from its own
+package registries under its own licenses (see requirements*.txt). No
+third-party game code or assets are bundled in this repository.

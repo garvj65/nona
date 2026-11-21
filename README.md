@@ -10,6 +10,7 @@ NONA turns an Android phone into a low-latency game controller for Windows: a to
 [![Android preview](https://github.com/garvj65/nona/actions/workflows/android.yml/badge.svg)](https://github.com/garvj65/nona/actions/workflows/android.yml)
 ![Version](https://img.shields.io/badge/version-0.6.1--preview-ff6b2c)
 ![Platforms](https://img.shields.io/badge/platforms-Android%209%2B%20%C2%B7%20Windows%2010%2F11-1f2428)
+[![License](https://img.shields.io/badge/license-Apache%202.0-1f2428)](LICENSE)
 
 <img src="docs/assets/hero.png" alt="NONA laptop dashboard with the phone racing controller in front; Gas is held on the phone and the matching binding lights up on the laptop" width="100%">
 
@@ -170,4 +171,8 @@ docs/                   Guides, references and design records
 
 ## Contributing
 
-Start with [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Every change runs the Python, Node, browser and Android suites in CI. A pull request should say what it verified on a real device and what it didn't.
+Start with [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Every change runs the Python, Node, browser and Android suites in CI. A pull request should say what it verified on a real device and what it didn't. Contributions are accepted under the Apache License 2.0 (Section 5).
+
+## License
+
+Copyright 2026 Garv Jhajharia. Licensed under the [Apache License 2.0](LICENSE). You may use, modify and distribute it, including commercially, as long as you keep the copyright notice and [NOTICE](NOTICE) and state your changes. The license includes an explicit patent grant. It doesn't grant use of the **NONA** name or logo: forks must ship under their own name.

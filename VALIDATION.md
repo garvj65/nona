@@ -1,62 +1,95 @@
-# Validation — NONA Android Bluetooth preview 0.6.1
+# Validation record
 
-Updated: 2026-11-17. Physical Wi-Fi results were reported on 2026-11-16.
+This file is the record of what has been **proven**, how, and on what. It's kept separate from the feature list on purpose: a passing test suite is not a passing phone.
 
-## Android preview evidence
+**Evidence levels**
 
-The native Android keyboard/mouse app now builds as an APK. [Android Actions run 44051171819](https://github.com/garvj65/nona/actions/runs/44051171819) passed 11 JVM tests, Android lint, debug/release compilation and an Android 35 emulator UI test. The UI test verifies the device-selection flow, Play/Stop, keyboard reports, background neutralization and paused resume. Its debug-only in-process link sends no Bluetooth or OS input. It cannot establish physical radio compatibility, Windows pairing success, game feel or real sensor latency.
-
-The report/session tests cover descriptor lengths, report bounds, neutral startup, simultaneous input, consumed-once mouse deltas, GET_REPORT state without relative replay, short taps, pause/reconnect behavior and gyro math. The native app requests Bluetooth permissions but no internet/location permission; it requires a selected bonded host and a separate Play action. Callback ordering and permission/lifecycle cleanup were reviewed during implementation. This is not a completed independent security audit.
-
-The redesigned Wi-Fi dashboard and phone controls passed the existing [NONA checks run 44051171867](https://github.com/garvj65/nona/actions/runs/44051171867), including Python/Node tests and Android-emulated Chromium. Dashboard screenshots were also captured at desktop and compact widths, with no horizontal overflow.
-
-Follow [docs/ANDROID_BLUETOOTH.md](docs/ANDROID_BLUETOOTH.md) to install the test APK and record physical Bluetooth acceptance. The native racing profile currently uses keyboard steering; calibrated position-based racing tilt remains available in the existing Wi-Fi controller. Native gyro assistance applies to Move & look.
-
-## 0.6.1 pre-flight changes (no new device evidence)
-
-Made before the owner's first physical 0.6 test, to remove failure modes that would otherwise end that test early. None of these is a physical pass.
-
-- **Bluetooth lifecycle.** AOSP `HidDeviceService` unregisters a HID app whose importance drops below visible. 0.6 also unregistered on every `onStop`, so a screen lock or an OEM full-screen pairing prompt dropped the Windows link. 0.6.1 keeps registration through a `connectedDevice` foreground service while input stays paused, with a ten-minute off-screen cutoff.
-- **Reconnect.** 0.6 disconnected any Windows-initiated HID connection unless that computer was already selected in this app session, including the connection Windows opens right after pairing. 0.6.1 accepts it from the remembered computer, or from any bonded computer within 150 s of **Pair a new computer**, and reconnects the remembered computer after registration unless the user tapped Disconnect.
-- **Movement.** Per-axis 0.22 thresholds turned forward into forward+strafe once the thumb drifted about 13°. Native and Wi-Fi keyboard movement now use equal 45° sectors with 7.5° hysteresis.
-- **Native racing.** Arrow-key steering is pulse-width modulated by stick distance (togglable). The pulse is 120 ms, six steps at the existing 50 Hz tick. A 100 Hz tick was tried and reverted: it kept the main thread permanently busy and hung the emulator UI test.
-
-- **Interface.** Phone controller, laptop dashboard and the Android app now share one graphite system. Colour carries meaning only: orange while a control is pressed (also on the dashboard's live binding chips), green/amber/red for link and output state. Stop and other non-game buttons moved to the phone's top bar, away from the thumbs. Face buttons use the standard diamond, unmapped buttons are dimmed, racing pedals are bottom-aligned under the right thumb, and the template-style eyebrows, serif headline and numbered sections are gone. The Android theme moved to dark Material, so dialogs and spinners match.
-
-Local checks for this change: 55 Python tests, 23 Node tests, all 18 rendered browser smoke checks (system Chrome, Android-emulated viewport, no page errors), 13 native JVM tests (2 new), and a Kotlin typecheck of main + debug/release sources against the API 35 platform jar. Gradle lint, APK assembly and the emulator UI test still need the Android Actions run.
-
-## Device evidence
-
-On 2026-11-16 the owner reported that physical phone tilt works in both NONA Sprint and JavaScript Racer with a Windows laptop and a Vivo phone using Chrome. The owner believes the phone runs Android 13; the exact model, Android version and Chrome version are not yet confirmed.
-
-| Physical check | Owner-reported result |
+| Level | Meaning |
 |---|---|
-| NONA Sprint tilt gameplay | Works |
-| JavaScript Racer tilt gameplay through the keyboard bridge | Works |
-| Controller RTT | Around 10–40 ms; this is the controller acknowledgement round trip, not measured end-to-end motion-to-display latency |
-| Release / stop | Owner later reported it works in 0.4; new mouse/right-button path still needs a physical check |
-| Screen lock and deliberate Wi-Fi interruption | Not checked; no interruption yet is not an interruption test |
-| Reconnect, rotation and touch fallback | No complete physical result recorded yet |
-| Roblox keyboard starter | Controls worked in an unnamed obby, but movement and camera felt restricted; no experience URL or baseline laptop frame-rate report supplied |
-| New mobile movement/swipe look/gyro and optional Xbox-driver gameplay | No physical result yet |
+| **Device** | Run by a person on real hardware, with the device and build recorded |
+| **CI** | Automated in GitHub Actions; the run is linked |
+| **Not run** | Implemented, with no evidence yet |
 
-These are owner-reported physical results, separate from automated tests. They establish working racing tilt and partial Roblox keyboard compatibility on this setup, not completion of every acceptance check or compatibility with other devices. SuperTuxKart and SuperTux do not run on this laptop and remain blocked targets. Smooth Roblox movement/camera, full lifecycle checks and the eventual packaged v1 remain acceptance gates.
+**Test hardware**
 
-## Existing Wi-Fi automated coverage
+| | |
+|---|---|
+| Phone | vivo Y33T (model V2146), Android 13, Chrome |
+| PC | Windows laptop; exact specs not recorded yet |
 
-- **54 Python tests:** existing protocol/profile/output lifecycle and TLS coverage plus mouse ABI/relative moves, held right-button cleanup/retry, focused output, pointer validation/bounds, no replay, concurrent move/look/jump, profile compatibility and host-only camera settings. Real HTTPS/WSS tests validate certificates: an untrusted client is rejected; a client trusting the generated CA connects.
-- **23 Node tests:** 9 racing simulation tests, 8 racing motion tests and 6 mobile-input tests covering floating touch origins, bounded radial input, gyro clutch, screen-space axes, invalid readings, deadband, frame gaps and staleness.
+---
 
-The native Xbox tests use mocked backends. The certificate tests create temporary CAs and do not change Windows or Android trust stores.
+## Current build: 0.6.1-preview (`f481311`)
 
-## Browser CI
+| Check | Result | Evidence |
+|---|---|---|
+| Python suite (protocol, output lifecycle, profiles, TLS) | 55 passed | [NONA checks 44142182027](https://github.com/garvj65/nona/actions/runs/44142182027), Ubuntu + Windows |
+| Node suite (racing physics, tilt, mobile input) | 23 passed | same run |
+| Rendered browser smoke (Android viewport) | 18 checks passed, no page errors | same run |
+| Android unit (HID reports, input session, 8-way, pulsed steering, gyro) | 13 passed | [Android preview 44142182103](https://github.com/garvj65/nona/actions/runs/44142182103) |
+| Android lint, debug and release builds | Passed | same run |
+| Android emulator UI and lifecycle test | Passed | same run, `native-ui` job |
+| Physical Bluetooth acceptance | **Not run** | See the checklist below |
 
-`tests/browser_smoke.py` exercises actual Chromium with an Android-emulated viewport: touch racing, simulated orientation events through Enable tilt/Calibrate, steering plus Gas, sensor-loss release, permission denial, touch fallback, profiles, dual sticks and controller diagnostics. The 0.5 checks add floating movement + swipe look + jump through a fake desktop output backend, no relative-delta replay, simulated gyro clutch/loss/permission denial, and mobile layout geometry. It checks portrait/landscape overflow and saves screenshots for review. See the Actions run for the browser result; adding these assertions alone does not establish a pass.
+## Physical acceptance
 
-These are generated sensor events, not readings from real Android hardware. Loopback is a browser secure context; physical phones browsing a laptop LAN IP use the documented trusted HTTPS setup. TLS certificate validation is tested independently over real HTTPS/WSS sockets. See Actions for the actual browser run result; test code alone is not proof of a pass.
+### Wi-Fi browser controller
 
-## Remaining physical checks
+| Check | Status | Date | Notes |
+|---|---|---|---|
+| NONA Sprint, touch racing | **Device: pass** | 2026-11-16 | |
+| NONA Sprint, tilt steering | **Device: pass** | 2026-11-16 | |
+| JavaScript Racer, tilt through the keyboard bridge | **Device: pass** | 2026-11-16 | Digital left/right with hysteresis |
+| Controller round trip | **Device: 10–40 ms** | 2026-11-16 | Acknowledgement time between the phone and the companion, not the full delay from motion to what's on screen |
+| Stop / release all | **Device: pass** | 2026-11-16 | Keyboard path, on 0.4 |
+| Roblox, keyboard starter profile | **Device: partial** | 2026-11-16 | Moved and jumped in an unnamed obby; camera felt restricted, which led to 0.5 Move & look |
+| Roblox, Move & look (swipe camera, gyro aim) | Not run | | Includes releasing the right mouse button |
+| 8-way movement sectors | Not run | | Added in 0.6.1 |
+| Screen lock, Wi-Fi loss, reconnect, rotation | Not run | | |
+| Virtual Xbox output in a real game | Not run | | Needs ViGEmBus |
 
-Follow docs/MOTION_TEST.md and docs/MOBILE_CONTROLS.md to finish the new mouse/right-button release, screen-lock, disconnect/reconnect, rotation and touch-fallback checks. Record the exact phone/browser and laptop specifications. Complete docs/ROBLOX_TEST.md in a real experience and compare against laptop keyboard/mouse performance. The new swipe/gyro output needs physical acceptance independently of prior tilt gameplay.
+### Android Bluetooth app
 
-The user requested refinement, validation, review, security checks and packaging after motion and Roblox succeed. Those gates are captured in docs/V1_PLAN.md. This iteration is not a completed security audit or a production v1 Android/Windows bundle. The later phone-as-DualSense PS5 bridge is not implemented here.
+| Check | Status | Notes |
+|---|---|---|
+| HID registration on the vivo Y33T | Not run | The first gate: if this fails, the phone's Bluetooth stack doesn't support the keyboard role |
+| Windows pairing, and NONA connecting by itself after pairing | Not run | |
+| Typing in Notepad, Stop releases everything | Not run | |
+| 8-way movement, mouse look, right-button release | Not run | |
+| Screen lock and app switch keep the link (foreground service) | Not run | Check Vivo's background-battery setting first |
+| Phone Bluetooth off releases keys on the PC | Not run | |
+| Relaunch reconnects; Disconnect stops auto-reconnect | Not run | |
+| Roblox Move & look, compared with laptop keyboard and mouse | Not run | |
+| JavaScript Racer, pulsed steering on vs off | Not run | |
+
+The step-by-step procedure is in [docs/ANDROID_BLUETOOTH.md](docs/ANDROID_BLUETOOTH.md#acceptance-test).
+
+## What automation can't prove
+
+- **Radio compatibility.** The emulator test uses a debug-only, in-process link that sends no Bluetooth or OS input. Whether a particular phone's Bluetooth stack works as a keyboard can only be found on that phone.
+- **Sensors.** The browser suite injects simulated orientation and motion events. Drift, axis direction and feel need a real phone.
+- **Game acceptance.** CI never runs a third-party game. A game may reject injected input, need a gamepad, or map controls differently in each experience.
+- **Windows drivers.** The Xbox path is tested with mocked backends, not an installed ViGEmBus.
+
+## Previous builds
+
+| Build | CI evidence | Device evidence |
+|---|---|---|
+| 0.6.0 | [Android 44051171819](https://github.com/garvj65/nona/actions/runs/44051171819) (11 unit tests, lint, builds, emulator UI); [checks 44051171867](https://github.com/garvj65/nona/actions/runs/44051171867) | None |
+| 0.5.0 | Python, Node and browser suites | Not run for Move & look |
+| 0.4.0 | Python, Node and browser suites, including real HTTPS/WSS certificate checks | Tilt racing pass, Stop pass |
+| 0.2.0 | Python and browser suites | JavaScript Racer on a phone through the keyboard bridge |
+
+## Recording a result
+
+Add a row to the right table with the date, build or commit, and status. For anything that fails, also note:
+
+```
+Device / OS / browser or app version:
+PC (CPU · GPU · RAM · Windows version):
+Game + URL or version, graphics settings:
+Profile and any binding changes:
+What happened (steps → expected → actual):
+Anything left held? How was it cleared?
+Connection details (Bluetooth app → Connection details → Copy):
+```

@@ -1,43 +1,51 @@
-# Mobile movement and camera — prototype 0.5
+# Move & look controls (Wi-Fi)
 
-The owner reported that the Roblox keyboard starter could move/jump in an unnamed obby, but movement and looking felt restricted. That starter had digital directions and no camera output. This iteration adds a floating movement surface, swipe mouse look and optional motion-assisted camera input. It does not establish that a particular Roblox experience accepts the new mouse output until physically tested.
+Move & look gives third-person games like Roblox what a plain D-pad can't: free movement plus a camera. The left half of the phone is a floating movement stick. The right half is a swipe camera that drives the PC's mouse, with optional gyro aim.
 
-## Update the working installation
+| | |
+|---|---|
+| **Profiles** | **Roblox · Mobile movement + look** (third person) · **Mouse look · First person** |
+| **Output** | Windows keyboard / mouse |
+| **Needs** | The Wi-Fi companion running. Gyro aim also needs [trusted local HTTPS](MOTION_TEST.md). |
+| **Status** | CI-tested; device test pending ([validation](../VALIDATION.md)) |
 
-Close NONA, then update the source in the existing working folder (`git pull` for a Git checkout, or copy the new ZIP's contents over the working source folder). Keep the existing `.venv`; do not copy an environment from another computer. Certificates remain in `%LOCALAPPDATA%\NONA\tls`, outside the repository. This change adds no Python package or driver requirement for keyboard/mouse output, and does not require recreating the existing CA.
+Using the Bluetooth app instead? It has the same Move & look profile. See [ANDROID_BLUETOOTH.md](ANDROID_BLUETOOTH.md).
 
-Use START_MOTION_WINDOWS.bat for gyro. Scan the current dashboard QR after restarting; the old pairing link expires. For swipe-only controls, START_WINDOWS.bat also works. Motion sensors still need trusted HTTPS in the browser prototype. Device-wide certificate installation is a prototype limitation, not the intended native-app onboarding; see APP_PAIRING.md.
+## Set up
 
-## Roblox: start with touch controls
+1. **Check the game first.** Play a minute with the laptop's own keyboard and mouse. If it stutters, lower the graphics settings; a controller can't fix a low frame rate.
+2. Start NONA (`START_WINDOWS.bat`, or `START_MOTION_WINDOWS.bat` if you want gyro), scan the QR code and turn the phone sideways.
+3. On the laptop, choose the profile and **Windows keyboard / mouse**. Choose the profile *before* enabling output, because changing profiles disarms output.
+4. Click **Enable output**, then click the game window within 4 seconds.
 
-1. Confirm that the same experience is playable with the laptop's keyboard and mouse. If it is choppy with those too, reduce Roblox graphics or choose a lighter experience; controller changes do not fix a low game frame rate.
-2. Pair the phone, use landscape/fullscreen, and select **Roblox · Mobile movement + look**. Select the profile before arming laptop output.
-3. On the laptop choose **Windows keyboard / mouse**, click **Enable output**, and focus the Roblox window within four seconds.
-4. Touch anywhere in the left surface and drag from that starting point to move. The floating stick is neutral on touch-down. Releasing centres it. WASD remains digital, including diagonal combinations; it cannot represent analog walking speed.
-5. Swipe the right surface to move the camera. Lift and swipe again for a longer turn. This profile holds the right mouse button only during the look gesture, for a typical third-person camera. Experience controls can differ.
-6. A jumps; B maps Shift; X maps E; Y maps Q. These are starter bindings. Test movement + look + jump together, then adjust optional actions to the experience.
-7. Change the phone's Look setting for a runtime speed adjustment. On the laptop, **Swipe camera settings** offers a saved base speed and a right-mouse drag switch. Apply, save a named profile if desired, then re-enable output. For first-person games that already capture the mouse, use **Mouse look · First person** or disable the right-mouse switch.
+## Use
 
-If mouse look is rejected, record the experience and result rather than forcing compatibility. The optional **Roblox · Xbox candidate** already supplies real analog axes and two-stick camera input where a gamepad is supported. Complete GAMEPAD_SETUP.md separately; the mouse route does not require that driver.
+| Control | How it works |
+|---|---|
+| **Move (left half)** | Touch anywhere; that point becomes the stick centre. Drag to move: 8-way WASD with equal 45° sectors and hysteresis, so an angled thumb still walks straight. Lift your thumb to stop. |
+| **Look (right half)** | Swipe to turn the camera; lift and swipe again for a bigger turn. In the third-person profile the right mouse button is held only during the swipe. |
+| **Buttons** | A jumps (Space) · B = Shift · X = E · Y = Q. These are starter bindings; experiences differ. |
+| **Look speed** | Runtime: the phone's **Look** menu. Saved default: dashboard → **Swipe camera settings** → **Apply camera settings**. |
 
-## Add optional gyro assist
+Movement is digital, so WASD can't walk slowly. For analog movement use the [virtual Xbox pad](GAMEPAD_SETUP.md) with **Roblox · Xbox candidate**.
 
-First establish usable swipe look. Tap **Enable gyro assist** on the phone and allow sensor permission if asked. The action releases/disarms output; enable laptop output again afterward and focus Roblox. There is no neutral-angle calibration for this angular-velocity mode.
+## Gyro aim (optional)
 
-Hold the right look surface and rotate the phone gently to assist camera aiming. Swiping and motion add together. Lifting the look thumb stops gyro camera output, so moving the phone while navigating menus does not aim. Use **Invert gyro Y** if needed. This is camera assistance, separate from the racing tilt-steering mode. Gyro response is bounded and filtered, but physical axis direction and feel must still be checked on the owner's Vivo phone.
+Set up swipe look first. Then tap **Gyro assist** on the phone and allow sensor access.
 
-Touch-only mode remains available when sensors are absent, denied or unusable. A missing/stale gyro stream releases input and disarms output; re-enable the desired mode and laptop output afterward. Screen rotation, hiding the page, profile changes, Stop and reconnect clear motion state. Browser lifecycle behavior still needs physical screen-lock/Wi-Fi-loss tests.
+- Gyro moves the camera **only while your thumb is on the look area**, so moving the phone in menus doesn't aim. Swipe and gyro add together.
+- Use **Invert gyro Y** if up and down feel reversed. Use **Touch only** to turn gyro off.
+- Turning gyro on disarms output. Re-enable it on the laptop and refocus the game.
+- If sensor readings stop, input is released and output disarms. Re-enable gyro or carry on with touch.
 
-## Input path and limits
+## How it stays safe
 
-- Continuous changes are coalesced into a 50 Hz send loop; button down/up send immediately so short taps are retained. This is a send budget, not an end-to-end latency guarantee.
-- Relative camera deltas are bounded per packet, consumed once, and never replayed by the host watchdog. Excessive browser socket buffering closes the controller connection instead of intentionally building an unbounded input queue.
-- Windows output must be explicitly armed and stays attached to the selected foreground window. Changing focus, disconnecting, timing out or stopping releases owned keys and right mouse. A rejected mouse release is retried; failed cleanup prevents rearming.
-- The protocol accepts old button/axis packets. Old saved profiles default to camera disabled. Camera settings are validated and changed by the laptop admin; profile changes disarm output.
-- Browser/CI tests do not prove actual Windows game input acceptance, phone sensor quality or improved gameplay FPS.
+- Continuous input is sent at up to 50 Hz, and button presses are sent immediately, so short taps still register.
+- Camera movement per packet is bounded (96 or less) and applied **once**. The watchdog never replays it.
+- Output follows the window you armed. Focus loss, disconnect, timeout, Stop and profile change release every key and the right mouse button. If a release fails, NONA retries it, and output can't be re-armed until the release succeeds.
 
-## Acceptance report
+## What to report
 
-Record the experience URL, whether laptop keyboard/mouse runs smoothly, the chosen NONA profile, simultaneous move/look/jump, camera speed/direction, gyro feel and typical controller RTT. Explicitly try Stop, screen lock, Wi-Fi loss/reconnect, orientation change and switching laptop windows. The owner has confirmed Stop for 0.4; screen lock and deliberate Wi-Fi interruption remain untested. The new mouse/right-button path needs those checks too.
+Experience name or URL, how it plays on the laptop alone, the profile used, whether moving, looking and jumping all work together, camera speed and direction, gyro feel, and the controller round-trip time shown on the phone. Also try Stop, locking the screen, a Wi-Fi drop, rotating the phone and switching windows. Record the results in [VALIDATION.md](../VALIDATION.md).
 
-References: https://create.roblox.com/docs/input/gamepad · https://create.roblox.com/docs/input/mouse-and-keyboard · https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput · https://w3c.github.io/deviceorientation/#devicemotion · https://raw.githubusercontent.com/chromium/chromium/main/third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.cc
+References: [Roblox mouse and keyboard input](https://create.roblox.com/docs/input/mouse-and-keyboard) · [Roblox gamepad input](https://create.roblox.com/docs/input/gamepad) · [Win32 SendInput](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput)

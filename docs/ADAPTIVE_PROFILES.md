@@ -1,22 +1,50 @@
-# How NONA adapts
+# Game profiles
 
-A game profile contains five explicit choices: name, phone layout, output mode, bindings, and stick tuning. The phone sends normalized controls; the selected output adapter translates them into Windows keyboard state or an Xbox report.
+A **profile** tells NONA how to talk to a particular game. It has five parts:
 
-| Game expects | Choose | Adaptation |
+| Part | Options |
+|---|---|
+| Name | Anything, such as *Roblox: Jailbreak* |
+| Phone layout | Gamepad · Racing · Dual stick (Move & look uses the dual-stick layout as touch surfaces) |
+| Output | Windows keyboard / mouse · Xbox 360 / XInput (optional) |
+| Bindings | Phone action → keyboard key, or → Xbox button / axis |
+| Tuning | Stick dead zone, sensitivity, invert Y · camera speed and right-button hold |
+
+NONA doesn't read a game's control settings. You match them once and save the result.
+
+## Built-in templates
+
+| Template | Layout | Output |
 |---|---|---|
-| Keyboard controls | Gamepad / Racing / Platformer keyboard preset | Map actions to the game's actual keys |
-| Analog gamepad controls | Optional Xbox racing or dual-stick preset | Proportional sticks/triggers plus Xbox buttons |
-| Different action buttons | Edit the active backend's bindings | Save the result under the game's name |
-| Different stick feel | Adjust gamepad dead zone / sensitivity / right-stick Y | Save tuning with the profile |
+| Gamepad · Arrows / WASD | Gamepad | Keyboard |
+| Racing · Arrows / WASD | Racing | Keyboard |
+| Platformer · Keyboard | Gamepad | Keyboard |
+| Celeste Classic · Keyboard | Gamepad | Keyboard (arrows, X, C) |
+| Roblox · Keyboard starter | Gamepad | Keyboard (WASD, Space) |
+| Roblox · Mobile movement + look | Move & look | Keyboard + mouse |
+| Mouse look · First person | Move & look | Keyboard + mouse, no right-button hold |
+| Racing · Xbox analog | Racing | Xbox |
+| Universal · Xbox dual sticks | Dual stick | Xbox |
+| Roblox · Xbox candidate | Dual stick | Xbox |
 
-NONA does not automatically discover or rewrite arbitrary game controls. A saved profile is how the app remembers the choices after you match them once. There is no process auto-switching, game launcher automation or keyboard/mouse emulation of right-stick aiming in 0.3.
+Built-in templates are never overwritten. Editing one and saving creates your own copy.
 
-## Save and reuse
+## Make one for your game
 
-Choose a preset, match the game's bindings, set output/tuning, enter a name and click **Save profile**. A built-in preset is copied into a new saved profile. Saving while a saved profile is selected updates it; **Save copy** duplicates it. Profile choices synchronize to the phone.
+1. Pick the closest template on the dashboard.
+2. **Edit keys for your game** → match the game's keys → **Apply key mapping**. For Xbox output, use **Xbox device, bindings and tuning**. Leave a binding empty to turn that action off.
+3. Adjust **Swipe camera settings** or stick tuning if needed.
+4. **Save, export or import a game profile** → enter a name → **Save profile**. Use **Save copy** to fork one of your saved profiles.
 
-The normal launcher stores profiles at `%LOCALAPPDATA%\NONA\profiles.json` on Windows, outside the checkout so code updates do not erase them. An alternate file can be chosen with `--profiles-file PATH`. No profile file is written by imported test app instances unless a path is provided. At startup the active selection defaults to Gamepad · Arrows and output is disabled.
+The selected profile syncs to the phone automatically.
 
-Export creates a versioned JSON file for the current bindings. Import validates its layout, output mode, allowed actions/targets, tuning and name, then creates a saved profile. Imported profiles cannot run commands. Templates are never overwritten. Writes replace the profile file atomically; an unreadable file remains untouched and saving is blocked until it is fixed or backed up. Up to 100 saved profiles are supported. There is no delete UI yet.
+## Storage and sharing
 
-Changing a profile, bindings, tuning or backend clears current input and disables both output backends. A new enable action is required. This prevents a held pedal from carrying into a different game profile.
+- Saved to `%LOCALAPPDATA%\NONA\profiles.json`, outside the repository folder, so updates don't erase it. Choose another file with `run.py --profiles-file PATH`.
+- Writes are atomic. If the file is unreadable, NONA leaves it untouched and blocks saving until you fix it or back it up.
+- **Export JSON** produces a versioned file you can share. Importing checks the name, layout, output, every action and key, and the tuning ranges. A profile is pure data and can't run anything.
+- Up to 100 saved profiles. There's no delete button yet.
+
+## Safety
+
+Switching profile, bindings, tuning or output **releases all input and disarms output**. You enable it again deliberately, so a held pedal can never carry over into a different game's controls.

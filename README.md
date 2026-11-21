@@ -1,158 +1,173 @@
+<div align="center">
+
 # NONA
 
-**A game controller, already in your pocket.**
+**Your phone is the controller. Your PC runs the game.**
 
-NONA turns an Android phone into a Wi-Fi controller for a Windows laptop. Open the controller in your phone browser, pair with a QR code, and play. The laptop runs the game; the phone supplies the controls.
+NONA turns an Android phone into a low-latency game controller for Windows: a touch wheel with tilt steering, a dual-stick pad, or a move-and-look surface for third-person games. It connects over Bluetooth with nothing installed on the PC, or over Wi-Fi with a small companion app.
 
-Version **0.6.1 preview** (Bluetooth lifecycle, reconnect and movement fixes on top of 0.6) adds a native Android **Bluetooth keyboard/mouse** app, with a simpler pairing screen and a dedicated play surface. The Windows controller desk and browser controls have a quieter, task-focused design. The existing Wi-Fi, racing, saved-profile and optional Xbox paths remain available.
+[![NONA checks](https://github.com/garvj65/nona/actions/workflows/ci.yml/badge.svg)](https://github.com/garvj65/nona/actions/workflows/ci.yml)
+[![Android preview](https://github.com/garvj65/nona/actions/workflows/android.yml/badge.svg)](https://github.com/garvj65/nona/actions/workflows/android.yml)
+![Version](https://img.shields.io/badge/version-0.6.1--preview-ff6b2c)
+![Platforms](https://img.shields.io/badge/platforms-Android%209%2B%20%C2%B7%20Windows%2010%2F11-1f2428)
 
-**[Install and test the Android preview](docs/ANDROID_BLUETOOTH.md)** · [Android build artifacts](https://github.com/garvj65/nona/actions/workflows/android.yml) · [Wi-Fi mobile controls](docs/MOBILE_CONTROLS.md)
+<img src="docs/assets/hero.png" alt="NONA laptop dashboard with the phone racing controller in front; Gas is held on the phone and the matching binding lights up on the laptop" width="100%">
 
-Direct Bluetooth uses Android/Windows Bluetooth pairing and does not require the PC NONA server, shared Wi-Fi or a CA certificate. This is a test APK, not a Play Store release. Physical Vivo/Windows compatibility remains a device acceptance test; generic/Xbox HID gamepad and native Wi-Fi QR pairing are not implemented by this Android preview.
+<sub>Hold Gas on the phone, and the matching binding lights up on the laptop in the same moment.</sub>
 
-## Current device results and next test
+</div>
 
-The owner confirmed physical tilt works in NONA Sprint and JavaScript Racer, with around 10–40 ms controller RTT, and that Release / stop works. Screen lock and deliberate Wi-Fi interruption remain untested. An unnamed Roblox obby accepted keyboard controls but felt restricted without camera input. Test the new **Roblox · Mobile movement + look** profile using [MOBILE_CONTROLS.md](docs/MOBILE_CONTROLS.md). SuperTuxKart and SuperTux do not run on this laptop. Read [MOTION_TEST.md](docs/MOTION_TEST.md), run PREPARE_MOTION_HTTPS.bat, complete its manual certificate-trust steps, then use START_MOTION_WINDOWS.bat. Choose Racing, Enable tilt, hold neutral and Calibrate. Gas/Brake remain touch controls.
+---
 
-[Alternative games](docs/NATIVE_GAMES.md) · [Roblox test gate](docs/ROBLOX_TEST.md) · [PC/Android v1 and later PS5 direction](docs/V1_PLAN.md)
+## Choose how to connect
 
-This is a pre-v1 controls and Bluetooth prototype. Complete the movement/camera and lifecycle device checks before native-app acceptance, release security review and packaging. [Native app pairing](docs/APP_PAIRING.md) is planned to keep trust inside NONA rather than require a device-wide test CA. The PS5 controller bridge remains a separate later version.
+| | **Bluetooth app** | **Wi-Fi browser controller** | **Wi-Fi + virtual Xbox pad** |
+|---|---|---|---|
+| **Phone** | NONA Android app (APK) | Chrome; nothing to install | Chrome |
+| **PC** | Nothing to install | NONA companion (Python) | Companion + optional driver |
+| **PC sees** | A Bluetooth keyboard + mouse | Keyboard + mouse input sent to the game window you choose | An Xbox 360 controller with analog sticks and triggers |
+| **Best for** | Roblox-style move & look, quick setup | Racing with tilt, custom key maps, the built-in demos | Games that want a real gamepad |
+| **Status** | Preview: CI-tested, first device test pending | Tested on a real phone and laptop (racing + tilt) | CI-tested with a mocked driver |
+| **Guide** | [Android Bluetooth](docs/ANDROID_BLUETOOTH.md) | [Quick start](#quick-start-wi-fi) | [Xbox output](docs/GAMEPAD_SETUP.md) |
 
-## Start on Windows
+## Quick start: Wi-Fi
 
-1. Download this repository with **Code → Download ZIP**, then extract the entire folder. If you already run the earlier starter, close its terminal first so port 8765 is free.
-2. Install [Python 3.10+](https://www.python.org/downloads/windows/) if needed, with **Add python.exe to PATH** selected.
-3. Double-click **START_WINDOWS.bat**. First setup installs the Python dependencies; later launches reuse them.
-4. The laptop dashboard opens at **http://localhost:8765**. Keep the terminal running.
-5. Connect the phone and laptop to the same trusted Wi-Fi. If Windows Firewall asks, allow Python on your private network.
-6. Scan the dashboard QR code and open the phone controller in Chrome. Choose **Racing · Arrows** on the phone.
-7. On the laptop, click **Launch NONA Sprint**. Press **Start** on the phone, then hold **Gas** and drag the wheel with your other thumb.
+You need Windows 10/11, [Python 3.10+](https://www.python.org/downloads/windows/) (tick **Add python.exe to PATH**), and an Android phone on the same Wi-Fi.
 
-The included games use direct network input: leave **desktop keyboard off** for these first tests. Turn the phone sideways for the wider controller layout.
+1. **Download** this repo (**Code → Download ZIP**) and extract the whole folder.
+2. **Run** `START_WINDOWS.bat`. The first launch installs dependencies, and the dashboard opens at `http://localhost:8765`. Allow Python on **Private** networks if Windows Firewall asks.
+3. **Scan** the dashboard QR code with your phone and open it in Chrome. Turn the phone sideways.
+4. **Play** the built-in **NONA Sprint** racer straight away. For any other game, pick a profile, click **Enable output**, then click the game window within 4 seconds.
 
-| Phone control | NONA Sprint |
-|---|---|
-| Touch wheel | Proportional left/right steering; springs to centre on release |
-| Gas / A | Accelerate |
-| Brake / B | Brake; overrides acceleration |
-| Handbrake | Stronger braking and tighter turning |
-| Nitro | Temporary boost with a replenishing reserve |
-| Start | Start / pause / resume |
-| Select | Reset the run |
+> [!TIP]
+> Test the key path before a real game. Pick **Racing · WASD**, click **Enable output**, focus Notepad and press **Gas**. You should see `w`.
 
-Follow the arrows counterclockwise, through the right, top, and left checkpoints before crossing the finish line. Grass slows you down. Best lap stays in the laptop browser. The violet car is a pacer with no collisions, not another connected player.
+## Quick start: Bluetooth
 
-**Neon Run** is still available from the dashboard. Choose a Gamepad preset for its D-pad layout.
+1. Download `nona-android-preview` from the latest green [Android preview run](https://github.com/garvj65/nona/actions/workflows/android.yml) and install the APK.
+2. Open NONA → **Set up Bluetooth** → **Pair a new computer**.
+3. On the PC: **Settings → Bluetooth & devices → Add device → Bluetooth**, pick the phone and confirm the PIN.
+4. NONA connects automatically. Tap **Open controller**, focus your game, then tap **Play**.
 
-## Play an existing online browser game
+The full walkthrough, including Vivo battery settings and the acceptance checklist, is in [docs/ANDROID_BLUETOOTH.md](docs/ANDROID_BLUETOOTH.md).
 
-NONA's companion can translate controller input into Windows keyboard events for the selected game window. This requires no modification to the game website.
+## Controller layouts
 
-A first external target is [Jake Gordon's JavaScript Racer](https://jakesgordon.com/games/racer/). Its published controls use the arrow keys; lower the in-game resolution and draw distance if needed. The project owner confirmed successful phone-controlled gameplay with the 0.2 release on their Windows + Android setup.
+<img src="docs/assets/controller-layouts.png" alt="Four phone layouts: Move & look, Gamepad, Racing and Dual stick" width="100%">
 
-1. Open the external game on the laptop and read its controls.
-2. Choose **Racing · Arrows** in NONA (or Racing · WASD for a game using WASD).
-3. Use **Edit keys for your game** on the dashboard if the controls differ. Saving a mapping disables desktop keyboard until you enable it again.
-4. Click **Enable keyboard**, then select the game window within **4 seconds**. Click its canvas if needed.
-5. Hold Gas and steer using the phone. Use **Stop / release keys** before switching browser tabs or ending play.
-
-Default racing mappings:
-
-| Controller action | Racing · Arrows | Racing · WASD |
+| Layout | Controls | Typical use |
 |---|---|---|
-| Steering left/right | Left / Right | A / D |
-| Gas | Up | W |
-| Brake | Down | S |
-| Handbrake | Space | Space |
-| Nitro | Left Shift | Left Shift |
-| Start | Enter | Enter |
-| Select | R | R |
+| **Move & look** | Floating 8-way stick, swipe camera, optional gyro aim, A/B/X/Y | Roblox and third-person games |
+| **Gamepad** | D-pad, diamond face buttons, shoulders, Start/Select | Platformers, browser games |
+| **Racing** | Touch wheel or calibrated tilt, pedals, handbrake, nitro | NONA Sprint, JavaScript Racer |
+| **Dual stick** | Two analog sticks, A/B/X/Y, LB/RB, LT/RT sliders | Virtual Xbox output |
 
-Handbrake, nitro, pause and reset only do something if the game uses those keys. Disable or change unused actions in the mapping editor. Match the game's key bindings before enabling input.
+There are **11 built-in profiles**: Gamepad, Racing, Platformer, Celeste Classic, three Roblox variants, Mouse look and two Xbox. You can remap any of them, save it under the game's name, and export or import it as JSON. Read [how profiles work](docs/ADAPTIVE_PROFILES.md).
 
-The touch wheel is proportional in our own racing demo. The keyboard bridge converts it to **digital left/right** using a dead zone and hysteresis; it is not analog Xbox-controller emulation.
+## What's in the box
 
-To verify the bridge independently, select Racing · WASD, open Notepad, enable keyboard and select Notepad during the countdown. Tap Gas: it should type `w`. Stop keyboard mode afterward. Holding an injected key does not promise text auto-repeat.
+**Input**
+- **Steering:** proportional touch steering, plus tilt steering with neutral calibration, dead zone and 20/30/45° range.
+- **Movement:** an 8-way stick with equal 45° sectors and hysteresis, so an angled thumb still walks straight.
+- **Camera:** relative swipe camera with bounded, consume-once deltas. Optional gyro aim is active only while your thumb is on the look area.
+- **Bluetooth racing:** the arrow key is pulsed in proportion to how far you steer, so keyboard games get analog-like steering.
 
-An online-hosted game is different from online multiplayer. NONA changes your input device; the game controls multiplayer, cross-play, account access, hardware requirements, and whether it accepts generated input. See [the compatibility guide](docs/COMPATIBILITY.md).
+**Output**
+- **Wi-Fi:** Windows `SendInput` keyboard and mouse, locked to the window you chose.
+- **Xbox:** optional virtual Xbox 360 pad with analog sticks and triggers.
+- **Bluetooth:** standard keyboard + mouse reports, so Windows needs no driver.
 
-## Adaptive controller
+**Safety** (see [Safety by design](#safety-by-design))
+- One **Stop** releases everything: keys, buttons, mouse and axes.
+- Input stops on timeout, focus change, disconnect, screen lock and profile change.
+- Nothing pressed before an interruption is replayed after it.
 
-Choose a layout and output mode that match the game, customize its bindings, then save a named profile. Profiles persist across restarts and can be imported/exported as JSON. The app synchronizes the selected profile to the phone. It does not automatically read arbitrary games’ control settings.
+**Included games**
+- **NONA Sprint:** a lap-timed canvas racer with checkpoints, nitro and a pacer car.
+- **Neon Run:** a button-response test game.
+- **Controller diagnostics:** shows host-side input next to what the operating system detects.
 
-For a native game accepting keyboard input, reuse the existing keyboard backend. For controller input, complete the optional Xbox setup and verify the device in the new Controller test page before playing. The optional backend uses retired ViGEmBus; see its setup guide for the dependency status and manual driver step. Normal setup installs no driver.
+## Project status
 
-Dual-stick mode provides both analog sticks, A/B/X/Y, shoulder buttons and spring-return trigger sliders. Xbox bindings and stick tuning are editable. Switching profiles or outputs disarms both backends, and the phone now has a Release / stop action.
+Each claim below carries the strongest evidence behind it. [VALIDATION.md](VALIDATION.md) has the full evidence record.
 
-## What works today
-
-- One paired phone with multi-touch gamepad and racing layouts; QR pairing and connection RTT.
-- Proportional touch steering, gas, brake, handbrake and nitro.
-- A lightweight Canvas racing time trial and the original Neon Run game.
-- Windows keyboard/mouse injection, named presets, per-action key remapping, floating WASD movement and relative swipe camera.
-- Optional gyro camera assistance while the right look surface is held, with bounded sensor deltas and a coalesced 50 Hz continuous-input loop.
-- Shared protocol for future Android clients; old button-only starter packets remain accepted.
-- Key release on normal disconnect, timeout, focus change, mapping changes and normal shutdown.
-
-An Android Bluetooth keyboard/mouse test APK is built by the Android preview workflow. Native Bluetooth gamepad/XInput, game streaming, internet relay and multiple-controller multiplayer are not implemented. The new browser mouse/gyro path and native Bluetooth controls need physical Roblox acceptance. Xbox output is optional and requires its separate adapter/driver setup. These are separate milestones in [the roadmap](docs/ROADMAP.md).
-
-## Project map
-
-| File | Responsibility |
+| Capability | Evidence |
 |---|---|
-| `server.py` | Pairing, controller state, WebSockets, mapping and safety timeout |
-| `windows_input.py` | Windows SendInput adapter and injected-key ownership |
-| `virtual_gamepad.py` | Optional Xbox backend, normalized reports and neutralization |
-| `controller_profiles.py` | Validated templates, saved profiles and atomic persistence |
-| `web/controller.js` | Touch/motion UI, reconnect and profile synchronization |
-| `web/motion.js` | Racing orientation mapping, calibration, dead zone and smoothing |
-| `web/mobile-input.js` | Floating-stick math and bounded angular-velocity camera assistance |
-| `local_tls.py` | Optional local HTTPS certificates, without installing trust |
-| `web/dashboard.js` | Pairing, presets, mapping editor and keyboard arming |
-| `web/race-physics.js` | Pure racing simulation, checkpoints, laps and boost |
-| `web/race.js` | Canvas rendering and direct controller integration |
-| `web/game.js` | Original Neon Run demo |
-| `tests/` | Protocol, input lifecycle, physics and rendered browser smoke checks |
+| Wi-Fi racing: touch and tilt (NONA Sprint, JavaScript Racer) | **Tested on a real phone and laptop** (Vivo + Windows, Chrome, 10–40 ms controller round trip) |
+| Stop / release on Wi-Fi | **Tested on a real phone and laptop** |
+| Wi-Fi move & look (Roblox profile) | CI-tested; keyboard-only Roblox play reached, camera path not yet tested on a device |
+| Android Bluetooth keyboard + mouse | CI-tested (unit, lint, emulator UI); **first device test pending** |
+| Virtual Xbox output | CI-tested with a mocked driver; real game not yet tested |
+| Native Wi-Fi app pairing, Windows installer, Play Store release | Designed, not built ([roadmap](docs/ROADMAP.md)) |
+| Phone as a PS5 DualSense replacement | Later, separate product ([roadmap](docs/ROADMAP.md)) |
 
-Plain HTML/CSS/JavaScript keeps the first setup small: no Node build, game engine, database or cloud account is required to play. Node is needed only for the optional JavaScript unit tests.
+## How it works
 
-## Development and checks
-
-```powershell
-py -3 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe run.py
+```mermaid
+flowchart LR
+  subgraph Phone["Android phone"]
+    UI["Chrome controller<br/>touch · tilt · gyro"]
+    APP["NONA app"]
+  end
+  subgraph PC["Windows PC"]
+    HID["Windows HID stack"]
+    COMP["NONA companion<br/>server.py"]
+    KB["SendInput<br/>keyboard / mouse"]
+    XB["Virtual Xbox pad<br/>(optional)"]
+    GAME(["Game window"])
+  end
+  APP -- "Bluetooth HID<br/>keyboard + mouse" --> HID --> GAME
+  UI -- "WebSocket · state snapshots, ≤50 Hz<br/>paired with a per-launch token" --> COMP
+  COMP --> KB --> GAME
+  COMP --> XB --> GAME
 ```
 
-For another port: `python run.py --port 8766`. Protocol and input lifecycle checks:
+Every packet the phone sends is a **full state snapshot** (which buttons are held, plus stick and camera values), not a series of press and release events. If a packet is lost, the next one corrects the state. If packets stop, the companion releases everything within 800 ms. Read [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full picture and [PROTOCOL.md](docs/PROTOCOL.md) for the wire format.
 
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+## Safety by design
+
+A controller that sticks is worse than no controller. NONA treats key release as a core feature:
+
+- **Output is opt-in.** Wi-Fi output starts off, follows a single window you choose, and stops if that window loses focus.
+- **The watchdog releases on silence.** No packet for 800 ms means every key, mouse button and axis is released.
+- **No replay.** After any interruption, input stays neutral until you press **Play** or **Enable output** again.
+- **Pairing is scoped.** The pairing token rotates on every launch, admin routes accept loopback connections only, and the Bluetooth app sends input only to a computer you chose.
+
+Read [SECURITY.md](SECURITY.md) for the threat model and known limits, such as plain HTTP on the local network for the browser path.
+
+## Documentation
+
+| Guide | |
+|---|---|
+| [Android Bluetooth app](docs/ANDROID_BLUETOOTH.md) | Install, pair and run the device acceptance test |
+| [Move & look controls](docs/MOBILE_CONTROLS.md) | Floating stick, swipe camera, gyro aim, Roblox setup |
+| [Tilt steering](docs/MOTION_TEST.md) | Trusted local HTTPS, calibration, first tilt test |
+| [Xbox output](docs/GAMEPAD_SETUP.md) | Optional virtual Xbox controller and driver status |
+| [Game profiles](docs/ADAPTIVE_PROFILES.md) | Presets, remapping, saving and import/export |
+| [Compatibility](docs/COMPATIBILITY.md) | Tested games, candidates (Roblox, Celeste, TrackMania) and how to report a result |
+
+| Reference | |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | Components, transports, input pipeline, design decisions |
+| [Protocol](docs/PROTOCOL.md) | WebSocket packets, limits and admin API |
+| [Native app pairing](docs/APP_PAIRING.md) | Planned per-device TLS pairing contract |
+| [Development](docs/DEVELOPMENT.md) | Run from source, test suites, Android build, CI |
+| [Validation](VALIDATION.md) · [Changelog](CHANGELOG.md) · [Roadmap](docs/ROADMAP.md) · [Security](SECURITY.md) | |
+
+## Repository layout
+
+```text
+server.py               Companion: pairing, WebSockets, watchdog, profile and output control
+windows_input.py        Windows SendInput keyboard/mouse adapter with key ownership tracking
+virtual_gamepad.py      Optional virtual Xbox 360 backend (vgamepad / ViGEmBus)
+controller_profiles.py  Built-in templates, validation, atomic profile storage
+local_tls.py            Optional local HTTPS certificates for browser motion sensors
+web/                    Phone controller, laptop dashboard, NONA Sprint, Neon Run, diagnostics
+android/                Native Kotlin app: Bluetooth HID link, input session, play surface
+tests/                  Python, Node and rendered-browser suites; Android tests live in android/
+docs/                   Guides, references and design records
 ```
 
-With Node 22+ available: `node --test tests/race.test.cjs tests/motion.test.cjs tests/mobile.test.cjs`.
+## Contributing
 
-Optional rendered Android-emulation browser check:
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-browser.txt
-.\.venv\Scripts\python.exe -m playwright install chromium
-.\.venv\Scripts\python.exe tests/browser_smoke.py
-```
-
-GitHub Actions runs protocol/physics checks on Ubuntu and Windows and browser checks on Ubuntu. See [VALIDATION.md](VALIDATION.md) for what was actually checked and what still needs physical devices. CI browser tests emulate an Android viewport; they do not run Android hardware.
-
-## Troubleshooting
-
-- **Phone cannot connect:** same Wi-Fi, non-guest network, private-network firewall permission, and VPN off for initial testing. Use the QR address, not localhost, on the phone. Try another displayed LAN IP if needed.
-- **Pairing unavailable:** close duplicate controller tabs and scan the current QR after a restart. The pairing token changes each server launch.
-- **Another game ignores controls:** verify the bridge with Notepad, then check mapping and game focus. A game may reject injected input or require a real/virtual gamepad.
-- **Keyboard turns off:** connection timeout, a changed application window, or an input error disables it. Re-enable after selecting the right game.
-- **Wrong browser tab receives controls:** the bridge locks a window, not a tab. Stop input before switching tabs in that window.
-- **Phone locks or switches apps:** reopen/reconnect and re-enable desktop keyboard if needed. Wake lock and fullscreen are best-effort browser features.
-- **Port busy:** stop the earlier starter or choose another port. Close the terminal with Ctrl+C after releasing controls.
-
-Keep the helper on a trusted private network. Local HTTP/WS is unencrypted; do not expose the port to the internet. Abrupt process termination or Windows rejecting a release cannot guarantee key cleanup, so release controls before killing the process.
-
-The project owner has confirmed NONA Sprint and the external JavaScript Racer on Windows + Android. Native-game and optional Xbox-driver tests remain separate acceptance checks; successful web racing does not establish those automatically.
+Start with [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Every change runs the Python, Node, browser and Android suites in CI. A pull request should say what it verified on a real device and what it didn't.

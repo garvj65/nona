@@ -1,43 +1,56 @@
-# NONA roadmap
+# Roadmap
 
-The accepted ordered release gates now live in [V1_PLAN.md](V1_PLAN.md): physical motion, then Roblox, then refinement/review/security and PC+Android packaging. The PS5 phone-controller bridge is separate and later.
+**North star:** any Android phone becomes a controller good enough to replace a real one: first for PC games, later as a DualSense replacement for a PS5 over Remote Play.
 
-## 0.5 mobile controls prototype
+The work moves through gates. A gate passes on **device evidence** recorded in [VALIDATION.md](../VALIDATION.md), not on code merged or CI going green.
 
-The owner's physical tilt and Stop tests passed. A Roblox obby accepted keyboard input but lacked usable camera control. Added floating WASD movement, relative swipe mouse look, optional clutched gyro camera assistance, configurable camera settings and a coalesced continuous-input loop. Native-game acceptance and screen-lock/Wi-Fi-loss tests remain open. See MOBILE_CONTROLS.md and APP_PAIRING.md; the latter is the planned native-app trust contract, not an APK implementation.
+## Where we are
 
-## 0.4 motion prototype
+```mermaid
+flowchart LR
+  A["0.2–0.4<br/>Racing + tilt<br/>✔ device-tested"] --> B["0.5<br/>Move & look<br/>◻ device test"]
+  B --> C["0.6.x<br/>Bluetooth app<br/>◻ device test"]
+  C --> D["v1.0<br/>PC + Android<br/>release"]
+  D --> E["v1.x<br/>Native gamepad,<br/>multi-controller"]
+  D -.-> F["Separate product<br/>PS5 DualSense<br/>replacement"]
+```
 
-Implemented calibrated orientation-aware tilt, touch fallback, sensor-loss release, optional local HTTPS setup, Roblox starter profiles and replacement game candidates. Real Android sensor and Roblox gameplay checks remain required.
+## Toward v1.0
 
-## 0.3: adaptive profiles and optional Xbox output
+| Gate | Goal | Status |
+|---|---|---|
+| **1. Motion** | Calibrated tilt racing works on a real phone and recovers safely | **Passed** (2026-11-16) |
+| **2. Bluetooth works on hardware** | The vivo Y33T registers as a keyboard and mouse, pairs, plays, and releases on every interruption | **Next.** Checklist in [ANDROID_BLUETOOTH.md](ANDROID_BLUETOOTH.md#acceptance-test) |
+| **3. A real game** | One Roblox experience is playable with Move & look on both paths, compared with the laptop's own keyboard and mouse | Keyboard-only partial pass; camera path not yet run |
+| **4. Refine** | Tune camera speed, stick sectors, steering pulse and gyro from measured results; fix every stuck-input or lifecycle failure | Waiting on gates 2–3 |
+| **5. Security review** | Independent review of pairing, origin boundaries, input release, profile import, transport, dependencies and the mobile lifecycle; findings fixed and re-verified | Not started. See [SECURITY.md](../SECURITY.md) for the current model. |
+| **6. Package** | A Windows companion that needs no Python install, a signed Android build, and tested install, upgrade and uninstall on real devices | Not started |
 
-Implemented: persistent named profiles, import/export, dual sticks and trigger sliders, keyboard/Xbox output selection, optional vgamepad backend, tuning, OS-controller diagnostics and an emergency stop. Complete GAMEPAD_SETUP.md and the native-game acceptance checks before marking physical gamepad gameplay verified.
+**v1.0 ships when all six gates pass.** Until then every build is a preview.
 
-## 0.2: racing first
+## v1 product scope
 
-Included: a touch wheel, independent pedals, handbrake/nitro, presets, editable mappings, NONA Sprint, and a documented external web-racer target.
+- **Android app** with two connection modes:
+  - **Direct Bluetooth** (keyboard + mouse, no PC install): built and in device testing.
+  - **Wi-Fi companion** with per-device QR pairing and app-scoped TLS: designed in [APP_PAIRING.md](APP_PAIRING.md).
+- **Windows companion** as a single installer: window-locked output, saved profiles and optional virtual Xbox output.
+- **Profiles that follow the game**: built-in templates, remapping, import and export.
 
-Acceptance: play a lap with two simultaneous touches; release the wheel and pedals; recover from disconnect; verify the Windows bridge in Notepad; drive the external racer and record the result.
+## After v1
 
-## Complete: motion steering lifecycle checks
+| Theme | What | Why it waits |
+|---|---|---|
+| Bluetooth gamepad | A generic HID gamepad descriptor for analog sticks and triggers over Bluetooth | A generic gamepad isn't XInput: game support varies, so it needs its own compatibility gate |
+| Xbox backend | Replace the retired ViGEmBus driver with a maintained backend | Depends on a viable maintained option |
+| Multiple controllers | Several phones, each owning its own output | One phone and one host must be solid first |
+| Bluetooth data to the companion | Wi-Fi-free companion mode | Only useful once the companion is packaged |
+| Haptics and accessibility | Vibration feedback, remappable layouts, left-handed and large-target modes | |
+| More platforms | macOS and Linux output adapters | Windows first |
 
-Serve the controller through trusted HTTPS with WSS, or add a native client. Add a user-triggered sensor-permission action, orientation detection, a neutral-position calibration, dead zone, smoothing and sensitivity. Handle device rotation and sensor loss. Never depend on disabling browser security. Sensor support varies by browser and device.
+## Separate product: phone as a DualSense for PS5
 
-Acceptance: steering follows tilt on the real Android phone, recalibrates, centres safely on sensor loss, and still releases on disconnect.
+After the PC version is stable, explore a separate bridge so a phone can stand in for the controller in PS5 Remote Play, on a console the player owns with a legitimate account. The phone replaces the controller, and the real PS5 still runs the game. This is not console emulation, and it gets its own feasibility, latency and compatibility gates. Success on Windows says nothing about whether a PS5 will accept it.
 
-## Continue: native games and backend maintenance
+## Released
 
-The 0.3 backend separates normalized controls from keyboard and optional Xbox output. The current Xbox route depends on retired ViGEmBus; evaluate maintained alternatives as they become practical. Add an actual compatibility matrix from games tested on the user's laptop. Investigate macOS/Linux backends separately.
-
-Acceptance: one supported native game recognizes the virtual device, holds proportional inputs correctly, and releases/reconnects reliably. Do not label keyboard injection as gamepad emulation.
-
-## Android app
-
-Keep the existing host protocol and build a Kotlin or React Native client around it. Add QR pairing, trusted transport, native sensors, tactile feedback, saved layouts and background lifecycle handling. A simple WebView wrapper does not solve analog-device emulation on Windows.
-
-Acceptance: install an APK on a real Android device and complete the same pairing, input, disconnect and racing checks without regressing the browser controller.
-
-## Wider product
-
-After one phone/one host is reliable: support multiple controllers with separate ownership, game-specific layouts, optional relay/WebRTC transport based on measured latency, accessibility settings, and a packaged Windows companion that does not require Python setup. Internet play, streaming and multiplayer are independent scopes.
+See [CHANGELOG.md](../CHANGELOG.md): 0.1 (first release) → 0.2 racing → 0.3 profiles and Xbox → 0.4 tilt → 0.5 Move & look → 0.6 Bluetooth app → 0.6.1 lifecycle, 8-way movement and redesign.

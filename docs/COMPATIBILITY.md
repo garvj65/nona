@@ -1,41 +1,54 @@
 # Game compatibility
 
-NONA supplies inputs. The laptop and game still determine performance and platform support.
+NONA replaces your **input device**. The PC still has to run the game, and the game decides what input it accepts. A game *verified* here has been played with NONA on real hardware. Everything else is a candidate until someone plays it.
 
-| Target | Current integration | Evidence / next check |
+## Results
+
+| Game | Path | Status |
 |---|---|---|
-| Original Neon Run | Direct WebSocket state | User reported working Windows + Android gameplay; protocol kept compatible |
-| NONA Sprint | Direct button state plus proportional touch/tilt steering | Owner reported physical tilt gameplay works on 2026-11-16 with Windows + Vivo/Chrome; release and screen-lock checks remain open |
-| Jake Gordon's JavaScript Racer | Racing · Arrows keyboard bridge with touch/tilt steering | Owner reported physical tilt gameplay works on 2026-11-16 on the same setup; this is keyboard steering rather than analog gamepad input |
-| Roblox | Keyboard starter, new mobile movement/mouse-look profile, optional Xbox candidate | Owner reported working but restricted keyboard controls in an unnamed obby; new swipe/gyro camera and Xbox routes remain unverified in a real experience |
-| Other keyboard-controlled websites | Racing/Gamepad presets plus editable bindings | Per-game focus, bindings and input acceptance must be checked |
-| Windows-native games accepting keyboard input | Same Windows keyboard bridge | Candidate path, not blanket verified support; some input systems reject injection |
-| Xbox-compatible titles | Optional virtual Xbox output in 0.3 | Implemented with a legacy driver dependency; physical device/game tests required |
-| Console/mobile-only games | No port or emulator is supplied | A supported Windows/browser version is needed; NONA does not run console games |
+| **NONA Sprint** (built-in) | Wi-Fi, direct touch and tilt | **Verified**: touch and tilt racing |
+| **Neon Run** (built-in) | Wi-Fi, direct buttons | **Verified** |
+| **[JavaScript Racer](https://jakesgordon.com/games/racer/)** | Wi-Fi → keyboard bridge (Racing · Arrows) | **Verified**: touch and tilt steering |
+| **Roblox** | Wi-Fi keyboard starter | **Partial**: moved and jumped in an obby, but the camera felt restricted |
+| **Roblox** | Wi-Fi or Bluetooth Move & look | Candidate: next device test |
+| **Roblox** | Virtual Xbox (Roblox · Xbox candidate) | Candidate: needs ViGEmBus |
+| **[Celeste Classic](https://maddymakesgamesinc.itch.io/celesteclassic)** | Wi-Fi keyboard (Celeste Classic · Keyboard) | Candidate |
+| **[TrackMania Nations Forever](https://store.steampowered.com/app/11020/TrackMania_Nations_Forever/)** | Wi-Fi keyboard (Racing · Arrows) | Candidate |
+| **SuperTuxKart, SuperTux** | — | Blocked: they won't launch on the test laptop (a laptop problem, not a NONA one) |
+| Other keyboard browser games | Wi-Fi keyboard with custom bindings | Usually works; check focus and bindings |
+| Native Windows games | Wi-Fi keyboard, or the virtual Xbox pad | Varies; some anti-cheat or input systems ignore injected input |
+| Console-only or mobile-only games | — | Not supported. NONA doesn't run console games. |
 
-## First external racing target
+## Roblox
 
-- Play: https://jakesgordon.com/games/racer/
-- Author's simpler straight-track version: https://jakesgordon.com/games/racer/v1-straight/
-- Source: https://github.com/jakesgordon/javascript-racer
+Roblox is a platform of experiences, and each experience picks its own controls. One experience working doesn't mean they all will.
 
-Start at low rendering resolution and draw distance if needed. Choose Racing · Arrows in NONA. Its Gas pedal sends Up, Brake sends Down, and the wheel sends Left/Right. The game source also includes WASD aliases. Third-party code/assets are not bundled into this repository.
+1. **Check the laptop.** Roblox needs 64-bit Windows 10/11 and DirectX 10+ ([requirements](https://en.help.roblox.com/hc/en-us/articles/203312800-Computer-Hardware-Operating-System-Requirements)). Pick a simple experience, set the graphics low and play a minute with the laptop's keyboard and mouse first. Don't spend Robux on a compatibility test.
+2. **Choose a route:**
 
-Source-level compatibility is not a successful device test: record your result after actually driving with the phone. If the game ignores input, verify Notepad first, then focus its canvas. Use the built-in NONA Sprint as the network/controller check.
+| Route | Profile | Movement | Camera |
+|---|---|---|---|
+| Move & look | **Roblox · Mobile movement + look** | 8-way WASD | Swipe, plus optional gyro aim ([guide](MOBILE_CONTROLS.md)) |
+| Virtual Xbox | **Roblox · Xbox candidate** | Analog left stick | Right stick (in experiences that support gamepads) |
+| Keyboard starter | **Roblox · Keyboard starter** | WASD | None; use the laptop mouse |
 
-## Analog vs keyboard steering
+3. **To pass:** a sustained session where you move, look and jump together, plus Stop, focus change and reconnect. Record the experience name or URL, PC specs, client version, profile and graphics settings.
 
-The phone sends a normalized steering value in [-1, 1]. NONA Sprint reads that value directly. For keyboard games, the server engages a direction at 0.22 and releases it below 0.12; opposite steering switches direction. This prevents jitter around the threshold. A keyboard event cannot express a proportional stick position. The optional Xbox backend in 0.3 preserves analog steering/sticks for games accepting that device.
+Never modify the Roblox client or get around its restrictions. If an experience rejects an input route, record that and try another route.
 
-## Online and cross-platform multiplayer
+## Browser and native candidates
 
-A game being hosted online does not mean it supports multiplayer. A multiplayer game being available on several platforms does not mean it supports cross-play. NONA's current role is to replace keyboard input on a Windows machine already able to run the game. It adds no game server, account entitlement, matchmaking, anti-cheat bypass or console compatibility layer.
+- **Celeste Classic** (browser platformer): choose **Celeste Classic · Keyboard**, where the D-pad sends the arrow keys, A sends X and B sends C. Click inside the game's frame before enabling output.
+- **TrackMania Nations Forever** (free 2008 racer, native): play offline with the keyboard first. Then use **Racing · Arrows** and match the game's input settings. Add tilt only after the basic controls work.
 
-The companion currently injects keys only on Windows. The built-in demos can run on other desktop OSes, but their native input adapters are not implemented. An Android APK is not required for the browser controller. See NATIVE_GAMES.md for the next candidate tests and GAMEPAD_SETUP.md for the optional Xbox route.
+## Keyboard steering vs analog
 
-## Record a real compatibility result
+The phone sends steering as a number from -1 to 1. **NONA Sprint** uses it directly. For keyboard games the companion presses left or right once steering passes **0.22** and releases below **0.12**; that gap (hysteresis) stops the key flickering at the threshold. A key is either pressed or not, so keyboard steering can't be truly proportional. The **virtual Xbox pad** keeps it analog. The **Bluetooth app** gets close by [pulsing the key](ANDROID_BLUETOOTH.md#controls).
 
-For each game note: game/version or URL, laptop CPU/GPU/RAM, Windows/browser version, chosen preset and overrides, whether press/hold/release works, whether steering plus gas works, performance settings, and connection/focus behavior. Mark it verified only after playing it. This is the evidence to collect before promising broad support.
+## Multiplayer and cross-play
 
+A game being hosted online doesn't make it multiplayer, and being available on several platforms doesn't mean cross-play. NONA adds no game servers, accounts, matchmaking, anti-cheat bypass or console compatibility; it only replaces the controller on a PC that can already run the game.
 
-Owner update (2026-11-16): physical tilt works in NONA Sprint and JavaScript Racer. Reported controller RTT is around 10–40 ms; it does not measure the complete motion-to-display delay. The device is a Vivo phone with Chrome; Android 13 is the owner's estimate and the exact model/version are unconfirmed. The owner later confirmed Release / stop, but screen lock and deliberate Wi-Fi-loss checks remain open. An unnamed Roblox obby accepted keyboard controls but felt restricted. See VALIDATION.md for the evidence boundaries and MOBILE_CONTROLS.md for the new movement/camera test. SuperTuxKart and SuperTux do not run on this laptop and are blocked test targets. Use the alternatives in NATIVE_GAMES.md.
+## Report a result
+
+Record the game and its version or URL, PC CPU, GPU, RAM and Windows version, the path and profile used with any binding changes, the graphics settings, and whether press, hold, release, combined inputs, Stop, focus change and reconnect behaved. Add it to [VALIDATION.md](../VALIDATION.md). Only mark a game *verified* after actually playing it.
